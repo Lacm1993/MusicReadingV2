@@ -90,6 +90,13 @@ enum InputMethod: String, Identifiable, CaseIterable{
         self
     }
 }
+enum Theme: String, CaseIterable, Identifiable{
+    case Light
+    case Dark
+    var id: Self{
+        self
+    }
+}
 
 
 //PROPERTYWRAPPERS
@@ -154,6 +161,9 @@ struct Note: Identifiable, Equatable, Comparable, Hashable, Codable{
     fileprivate(set) var accidental: NoteAccidental
     fileprivate(set) var clef: Clef
     fileprivate(set) var MIDINoteNumber : Int
+    func chartLabel()-> String{
+        "\(self.name.rawValue) \(self.register)"
+    }
 }
 extension Note : CustomStringConvertible{
     var description: String{
@@ -235,7 +245,7 @@ struct Level: Identifiable, Codable, Hashable{
         self.numberOfQuestions = 0
         self.timer = 120
         self.notes = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60)]
-        self.id = -1
+        self.id = 0
         self.maxScore = 0
         self.numberOrTries = 0
         self.freeLevel = false
@@ -338,13 +348,13 @@ class AppProgress: ObservableObject{
             return
         }
         levels = [Level(numberOfQuestions: 100, timer: 120,
-                        id: 0,
+                        id: 1,
                         numberOrTries: 0,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
                         ]),
                   Level(numberOfQuestions: 100, timer: 120,
-                        id: 1,
+                        id: 2,
                         numberOrTries: 0,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),

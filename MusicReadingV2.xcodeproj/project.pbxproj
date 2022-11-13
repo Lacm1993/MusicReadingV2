@@ -15,6 +15,18 @@
 		AE26C7C8291C3BE7008F5846 /* MusicReadingV2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE26C7C7291C3BE7008F5846 /* MusicReadingV2UITests.swift */; };
 		AE26C7CA291C3BE7008F5846 /* MusicReadingV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE26C7C9291C3BE7008F5846 /* MusicReadingV2UITestsLaunchTests.swift */; };
 		AE8FEA3E292049E50055E15B /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA3D292049E50055E15B /* DataModel.swift */; };
+		AE8FEA4129205EEC0055E15B /* MIDIKit in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4029205EEC0055E15B /* MIDIKit */; };
+		AE8FEA4329205EEC0055E15B /* MIDIKitControlSurfaces in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4229205EEC0055E15B /* MIDIKitControlSurfaces */; };
+		AE8FEA4529205EEC0055E15B /* MIDIKitCore in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4429205EEC0055E15B /* MIDIKitCore */; };
+		AE8FEA4729205EEC0055E15B /* MIDIKitIO in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4629205EEC0055E15B /* MIDIKitIO */; };
+		AE8FEA4929205EEC0055E15B /* MIDIKitSMF in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4829205EEC0055E15B /* MIDIKitSMF */; };
+		AE8FEA4B29205EEC0055E15B /* MIDIKitSync in Frameworks */ = {isa = PBXBuildFile; productRef = AE8FEA4A29205EEC0055E15B /* MIDIKitSync */; };
+		AE8FEA4D29205F460055E15B /* MIDIImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA4C29205F460055E15B /* MIDIImplementation.swift */; };
+		AE8FEA4F292061650055E15B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA4E292061650055E15B /* SettingsView.swift */; };
+		AE8FEA51292063D40055E15B /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA50292063D40055E15B /* ViewModifiers.swift */; };
+		AE8FEA5329207A5C0055E15B /* LevelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA5229207A5C0055E15B /* LevelView.swift */; };
+		AE8FEA55292087260055E15B /* ButtonInputSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA54292087260055E15B /* ButtonInputSubview.swift */; };
+		AE8FEA5729208CC40055E15B /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA5629208CC40055E15B /* StatisticsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +59,12 @@
 		AE26C7C7291C3BE7008F5846 /* MusicReadingV2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicReadingV2UITests.swift; sourceTree = "<group>"; };
 		AE26C7C9291C3BE7008F5846 /* MusicReadingV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicReadingV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		AE8FEA3D292049E50055E15B /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
+		AE8FEA4C29205F460055E15B /* MIDIImplementation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIImplementation.swift; sourceTree = "<group>"; };
+		AE8FEA4E292061650055E15B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AE8FEA50292063D40055E15B /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
+		AE8FEA5229207A5C0055E15B /* LevelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelView.swift; sourceTree = "<group>"; };
+		AE8FEA54292087260055E15B /* ButtonInputSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInputSubview.swift; sourceTree = "<group>"; };
+		AE8FEA5629208CC40055E15B /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +72,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE8FEA4929205EEC0055E15B /* MIDIKitSMF in Frameworks */,
+				AE8FEA4729205EEC0055E15B /* MIDIKitIO in Frameworks */,
+				AE8FEA4529205EEC0055E15B /* MIDIKitCore in Frameworks */,
+				AE8FEA4B29205EEC0055E15B /* MIDIKitSync in Frameworks */,
+				AE8FEA4329205EEC0055E15B /* MIDIKitControlSurfaces in Frameworks */,
+				AE8FEA4129205EEC0055E15B /* MIDIKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,8 +122,14 @@
 			isa = PBXGroup;
 			children = (
 				AE26C7AB291C3BE6008F5846 /* MusicReadingV2App.swift */,
-				AE8FEA3D292049E50055E15B /* DataModel.swift */,
 				AE26C7AD291C3BE6008F5846 /* ContentView.swift */,
+				AE8FEA5229207A5C0055E15B /* LevelView.swift */,
+				AE8FEA54292087260055E15B /* ButtonInputSubview.swift */,
+				AE8FEA5629208CC40055E15B /* StatisticsView.swift */,
+				AE8FEA4E292061650055E15B /* SettingsView.swift */,
+				AE8FEA50292063D40055E15B /* ViewModifiers.swift */,
+				AE8FEA3D292049E50055E15B /* DataModel.swift */,
+				AE8FEA4C29205F460055E15B /* MIDIImplementation.swift */,
 				AE26C7AF291C3BE6008F5846 /* Assets.xcassets */,
 				AE26C7B1291C3BE6008F5846 /* MusicReadingV2.entitlements */,
 				AE26C7B2291C3BE6008F5846 /* Preview Content */,
@@ -148,6 +178,14 @@
 			dependencies = (
 			);
 			name = MusicReadingV2;
+			packageProductDependencies = (
+				AE8FEA4029205EEC0055E15B /* MIDIKit */,
+				AE8FEA4229205EEC0055E15B /* MIDIKitControlSurfaces */,
+				AE8FEA4429205EEC0055E15B /* MIDIKitCore */,
+				AE8FEA4629205EEC0055E15B /* MIDIKitIO */,
+				AE8FEA4829205EEC0055E15B /* MIDIKitSMF */,
+				AE8FEA4A29205EEC0055E15B /* MIDIKitSync */,
+			);
 			productName = MusicReadingV2;
 			productReference = AE26C7A8291C3BE6008F5846 /* MusicReadingV2.app */;
 			productType = "com.apple.product-type.application";
@@ -220,6 +258,9 @@
 				Base,
 			);
 			mainGroup = AE26C79F291C3BE6008F5846;
+			packageReferences = (
+				AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */,
+			);
 			productRefGroup = AE26C7A9291C3BE6008F5846 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -262,7 +303,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE8FEA5329207A5C0055E15B /* LevelView.swift in Sources */,
+				AE8FEA4F292061650055E15B /* SettingsView.swift in Sources */,
+				AE8FEA4D29205F460055E15B /* MIDIImplementation.swift in Sources */,
 				AE26C7AE291C3BE6008F5846 /* ContentView.swift in Sources */,
+				AE8FEA5729208CC40055E15B /* StatisticsView.swift in Sources */,
+				AE8FEA55292087260055E15B /* ButtonInputSubview.swift in Sources */,
+				AE8FEA51292063D40055E15B /* ViewModifiers.swift in Sources */,
 				AE26C7AC291C3BE6008F5846 /* MusicReadingV2App.swift in Sources */,
 				AE8FEA3E292049E50055E15B /* DataModel.swift in Sources */,
 			);
@@ -616,6 +663,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/orchetect/MIDIKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AE8FEA4029205EEC0055E15B /* MIDIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKit;
+		};
+		AE8FEA4229205EEC0055E15B /* MIDIKitControlSurfaces */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitControlSurfaces;
+		};
+		AE8FEA4429205EEC0055E15B /* MIDIKitCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitCore;
+		};
+		AE8FEA4629205EEC0055E15B /* MIDIKitIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitIO;
+		};
+		AE8FEA4829205EEC0055E15B /* MIDIKitSMF */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitSMF;
+		};
+		AE8FEA4A29205EEC0055E15B /* MIDIKitSync */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE8FEA3F29205EEC0055E15B /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitSync;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AE26C7A0291C3BE6008F5846 /* Project object */;
 }

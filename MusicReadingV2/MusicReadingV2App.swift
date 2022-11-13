@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct MusicReadingV2App: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
+    @StateObject var midiManager = MIDIModule()
+     var body: some Scene {
+         WindowGroup {
+             ContentView()
+                 .environmentObject(midiManager)
+         }
+     }
 }
