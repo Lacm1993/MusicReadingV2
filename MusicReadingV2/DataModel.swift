@@ -97,8 +97,12 @@ enum Theme: String, CaseIterable, Identifiable{
         self
     }
 }
-
-
+enum NextLevelUnlocked{
+    case True
+    case False
+    case Done
+    case None
+}
 //PROPERTYWRAPPERS
 @propertyWrapper
 struct RegisterControl : Hashable, Codable{
@@ -184,6 +188,8 @@ struct Level: Identifiable, Codable, Hashable{
     fileprivate(set) var numberOrTries: Int
     fileprivate(set) var percentagePerNote : [Note : ScorePerNote]
     fileprivate(set) var freeLevel: Bool
+    fileprivate(set) var isEnabled: Bool
+    fileprivate(set) var isDeletable: Bool
     var isCompleted: Bool{
         guard !freeLevel else{
             return true
@@ -228,14 +234,16 @@ struct Level: Identifiable, Codable, Hashable{
             return self.percentagePerNote[note]?.wrong ?? 0
         }
     }
-    init(numberOfQuestions: Int, timer: Int, id: Int, numberOrTries: Int, maxScore: Int = 0, notes: [Note], freeLevel: Bool = false) {
+    init(numberOfQuestions: Int = 100, timer: Int = 120, numberOrTries: Int = 0, maxScore: Int = 0, freeLevel: Bool = false, isEnabled: Bool = false, isDeletable: Bool = false, id: Int, notes: [Note]) {
         self.numberOfQuestions = numberOfQuestions
         self.timer = timer
-        self.notes = notes
-        self.id = id
-        self.maxScore = maxScore
         self.numberOrTries = numberOrTries
+        self.maxScore = maxScore
         self.freeLevel = freeLevel
+        self.isEnabled = isEnabled
+        self.isDeletable = isDeletable
+        self.id = id
+        self.notes = notes
         self.percentagePerNote = notes.reduce(into: [:]){dict, note in
             dict[note] = ScorePerNote(right: 0, wrong: 0)
         }
@@ -243,12 +251,14 @@ struct Level: Identifiable, Codable, Hashable{
     //PlaceHolder level
     init(){
         self.numberOfQuestions = 0
-        self.timer = 120
+        self.timer = 0
         self.notes = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60)]
-        self.id = 0
+        self.id = -1
         self.maxScore = 0
         self.numberOrTries = 0
         self.freeLevel = false
+        self.isEnabled = true
+        self.isDeletable = false
         self.percentagePerNote = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60):  ScorePerNote(right: 0, wrong: 0)]
     }
 }
@@ -320,8 +330,11 @@ class AppProgress: ObservableObject{
     @Published var levels: [Level]
     @AppStorage(AppProgress.completedLevelsKey) var completedLevels = 0
     @AppStorage(AppProgress.enabledLevelsKey) var enabledLevels = 1
+    var count: Int{
+        levels.count
+    }
     func level(withID id: Int)-> Level{
-        return levels.first{level in level.id == id} ?? Level(numberOfQuestions: 0, timer: 120, id: -1, numberOrTries: 0, notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60)])
+        return levels.first{level in level.id == id} ?? Level()
     }
     func saveData(){
         if let data = try? JSONEncoder().encode(levels){
@@ -338,24 +351,58 @@ class AppProgress: ObservableObject{
             levels[index] = newInfo
         }
     }
-    
+    func unlockNextLevel(fromLevelAtIndex index: Int)-> NextLevelUnlocked{
+        guard levels[index].isCompleted else{
+            return .False
+        }
+        guard index < count else{
+            return .None
+        }
+        guard !levels[index + 1].isEnabled else{
+            return .Done
+        }
+        levels[index + 1].isEnabled = true
+        return .True
+    }
     //This function will create custom levels and optionally add them to the array of levels
     func createLevel(){}
     
+    //Only for development, resets the game to the initial state
+    func resetAll(){
+        levels = [Level(isEnabled: true, id: 0,
+                        notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
+                                Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
+                        ]),
+                  Level(id: 1,
+                        notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
+                                Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
+                                Note(name: .C, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 72),
+                                Note(name: .G, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 79)
+                        ])
+        ]
+        saveData()
+    }
+    //Deletes maxScore, numberOfTries, and the scorePerNote for every level but it leaves everything else as is
+    func resetGameHistory(){
+        for i in 0..<levels.count{
+            levels[i].maxScore = 0
+            levels[i].numberOrTries = 0
+            for note in levels[i].notes{
+                levels[i].percentagePerNote[note] = Level.ScorePerNote(right: 0, wrong: 0)
+            }
+        }
+        saveData()
+    }
     init() {
         if let object : [Level] = FileManager.default.loadData(for: "Levels.json"){
             levels = object
             return
         }
-        levels = [Level(numberOfQuestions: 100, timer: 120,
-                        id: 1,
-                        numberOrTries: 0,
+        levels = [Level(isEnabled: true, id: 0,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
                         ]),
-                  Level(numberOfQuestions: 100, timer: 120,
-                        id: 2,
-                        numberOrTries: 0,
+                  Level(id: 1,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
                                 Note(name: .C, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 72),

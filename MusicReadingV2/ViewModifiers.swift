@@ -31,7 +31,7 @@ extension View{
 extension View{
     func textAndSystemImagesColor(preferedScheme theme: Theme)-> some View{
         let color = theme == .Dark ?
-        Color(red: 0.290, green: 0.427, blue: 0.533, opacity: 1.000) :
+        Color(red: 0.776, green: 0.804, blue: 0.843, opacity: 1.000) :
         Color(red: 0.835, green: 0.851, blue: 0.878, opacity: 1.000)
         return self
             .foregroundColor(color)
@@ -76,9 +76,29 @@ struct GameButton : ButtonStyle{
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(color, lineWidth: 5)
             )
-            .disabled(pauseGame)
             .overlay(
                 pauseGame ?
+                AnyView(RoundedRectangle(cornerRadius: 10)
+                    .foregroundColor(.gray.opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray, lineWidth: 5)
+                    )) :
+                AnyView(Color.clear)
+            )
+    }
+}
+extension View{
+    func customToolbarApperance()-> some View{
+        self
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+    }
+    func disabledAppearance(check: Bool)-> some View{
+        self
+            .overlay(
+                check ?
                 AnyView(RoundedRectangle(cornerRadius: 10)
                     .foregroundColor(.gray.opacity(0.5))
                     .overlay(

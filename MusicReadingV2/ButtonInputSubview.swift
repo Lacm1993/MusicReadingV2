@@ -25,6 +25,7 @@ struct ButtonInputSubView: View {
                     Text(level.uniqueNoteNames[number].rawValue)
                 }
                 .buttonStyle(GameButton(width: width, height: height, theme: theme, pauseGame: pauseGame))
+                .disabled(pauseGame)
             }
         }
     }
@@ -33,7 +34,7 @@ struct ButtonInputSubView: View {
 struct ButtonInputSubView_Previews: PreviewProvider {
     static var funcToPreview = {(int: Int) -> Void in }
     static var previews: some View {
-        ButtonInputSubView(maxNumber: 10, funcToRun: funcToPreview, level: Level(numberOfQuestions: 0, timer: 0, id: -1, numberOrTries: 0, notes: []), pauseGame: true, width: 10, height: 10, theme: .Dark)
+        ButtonInputSubView(maxNumber: 10, funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, width: 10, height: 10, theme: .Dark)
     }
 }
 

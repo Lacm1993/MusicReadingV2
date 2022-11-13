@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var data: AppProgress
     @Environment(\.dismiss) var dismiss
     @Binding var inputMethod: InputMethod
     @Binding var theme: Theme
@@ -32,6 +33,20 @@ struct SettingsView: View {
                     }
                 }header: {
                     Text("Theme")
+                }
+                Section{
+                    Button{
+                        data.resetGameHistory()
+                    }label: {
+                        Text("Delete Game data")
+                    }
+                    Button{
+                        data.resetAll()
+                    }label:{
+                        Text("Reset app to initial state")
+                    }
+                }header: {
+                    Text("Development tools")
                 }
             }
             .navigationTitle("Settings")

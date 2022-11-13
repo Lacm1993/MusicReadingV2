@@ -27,14 +27,16 @@ struct LevelView: View {
     @State private var solution = 0
     @State private var questionsRemaining = 0
     @State private var isShowingSheet = false
+    @State private var isShowingAlert = false
     @State private var answerAnimation : Image?
     @State private var answerAnimationColor : Color = .green
     @State private var answerAnimationOpacity = 1.0
     @State private var timeRemaining = 0
     @State private var timeScaleEffect = 0.25
     @State private var pauseGame = false
-    @State private var isShowingAlert = false
+    @State private var isNextLevelUnlocked : NextLevelUnlocked = .False
     @State private var haptics : CHHapticEngine?
+
     
     var rightAnswers: Int{
         score.scorePerNote.values.map{ $0.right }.reduce(0, +)
@@ -111,8 +113,9 @@ struct LevelView: View {
             }
             .navigationTitle(Text("Level \(id)"))
             .theme(preferedScheme: theme)
+            .customToolbarApperance()
             .sheet(isPresented: $isShowingSheet, onDismiss: {reset()}){
-                StatisticsView(level: level, score: score.scorePerNote, theme: theme)
+                StatisticsView(level: level, score: score.scorePerNote, theme: theme, isNextLevelUnlocked: isNextLevelUnlocked)
             }
             .alert(alertTitle, isPresented: $isShowingAlert){
                 Button{
@@ -195,6 +198,7 @@ struct LevelView: View {
     }
 }
 
+
 extension LevelView{
     func reset(){
         level = data.level(withID: id)
@@ -209,6 +213,7 @@ extension LevelView{
     func saveToDataModel(){
         level.updateMaxScoreAndNumberOfTries(with: rightAnswers)
         data.updateLevelInfo(with: level)
+        isNextLevelUnlocked = data.unlockNextLevel(fromLevelAtIndex: level.id)
         data.saveData()
     }
 }

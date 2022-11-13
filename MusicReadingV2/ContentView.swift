@@ -79,14 +79,19 @@ struct ContentView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .textFieldStyle(.roundedBorder)
                             .keyboardType(.numberPad)
+                            .disabled(!level.isEnabled)
+                            .disabledAppearance(check: !level.isEnabled)
                         }
                         .navigationDestination(for: Level.self){level in
                             LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical)
                 }
                 .theme(preferedScheme: theme)
                 .navigationTitle(Text("Music reading"))
+                .customToolbarApperance()
                 .alert(alertTitle, isPresented: $isAlertShowing){
                     Button(action: {}){
                         Text("OK")
@@ -96,6 +101,7 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $isShowingSheet){
                     SettingsView(inputMethod: $inputMethod, theme: $theme)
+                        .presentationDetents([.fraction(0.38), .fraction(0.60)])
                 }
                 .safeAreaInset(edge: .bottom, alignment: .leading){
                     Button{

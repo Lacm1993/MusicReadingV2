@@ -17,6 +17,7 @@ struct StatisticsView: View {
     let levelStatus : Bool
     let score : Int
     let theme: Theme
+    let isNextLevelUnlocked: NextLevelUnlocked
     var levelScoreLabel: AttributedString{
         let str = "**Score per note this time**"
         if let s1 = try? AttributedString(markdown: str){
@@ -63,6 +64,28 @@ struct StatisticsView: View {
         }
         return s1
     }
+    var nextLevelUnlockedInfo: AttributedString{
+        var str = ""
+        switch isNextLevelUnlocked{
+        case .True:
+            str += "You have unlocked the next level, go check it out!"
+        case .False:
+            str += "Try again to unlock the next level"
+        case .None:
+            str += "You have completed every level, congrats!"
+        case .Done:
+            str += ""
+        }
+        var s1 = AttributedString(str)
+        if isNextLevelUnlocked == .True{
+            s1.foregroundColor = .green
+        }else if isNextLevelUnlocked == .False{
+            s1.foregroundColor = .red
+        }else if isNextLevelUnlocked == .None{
+            s1.foregroundColor = .yellow
+        }
+        return s1
+    }
     var body: some View {
         NavigationStack{
             GeometryReader{geo in
@@ -73,6 +96,7 @@ struct StatisticsView: View {
                         VStack(spacing: 10){
                             Text(maxScoreInfo)
                             Text(levelCompleteInfo)
+                            Text(nextLevelUnlockedInfo)
                         }
                         .padding()
                         Divider()
@@ -113,10 +137,11 @@ struct StatisticsView: View {
                 .navigationTitle("Statistics")
                 .theme(preferedScheme: theme)
                 .textAndSystemImagesColor(preferedScheme: theme)
+                .customToolbarApperance()
             }
         }
     }
-    init(level: Level, score: [Note: ScoreInstance.ScorePerNote], theme: Theme){
+    init(level: Level, score: [Note: ScoreInstance.ScorePerNote], theme: Theme, isNextLevelUnlocked: NextLevelUnlocked){
         historyData = HistoryChartObjects(level: level)
         levelData = LevelChartObjects(score: score)
         numberOfRuns = level.numberOrTries + 1
@@ -128,11 +153,12 @@ struct StatisticsView: View {
         }
         self.score = getScore
         self.theme = theme
+        self.isNextLevelUnlocked = isNextLevelUnlocked
     }
 }
 struct StatisticsView_Previews: PreviewProvider {
     static var previews: some View {
-        StatisticsView(level: Level(numberOfQuestions: 0, timer: 0, id: 0, numberOrTries: 0, notes: []), score: [:], theme: .Dark)
+        StatisticsView(level: Level(id: -1, notes: []), score: [:], theme: .Dark, isNextLevelUnlocked: .False)
     }
 }
 
