@@ -12,10 +12,11 @@ struct ContentView: View {
     @StateObject var navigationHistory = NavigationHistory()
     @Environment(\.scenePhase) var scenePhase
     @State private var levelToEdit : Int?
+    @State private var isShowingNewLevelSheet = false
+    @State private var isShowingSheet = false
     @State private var isAlertShowing = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
-    @State private var isShowingSheet = false
     @AppStorage("InputMethod") var inputMethod : InputMethod = .Buttons
     @AppStorage("Theme") var theme: Theme = .Dark
     @FocusState var isKeypadFocused : Bool
@@ -65,12 +66,21 @@ struct ContentView: View {
                                         Text("Change the time limit")
                                     }
                                     .focused($isKeypadFocused)
-                                    Button{
-                                        saveEdits(for: level)
-                                    }label: {
-                                        Text("Save")
+                                    HStack{
+                                        Button{
+                                            saveEdits(for: level)
+                                        }label: {
+                                            Text("Save")
+                                        }
+                                        .buttonStyle(.bordered)
+                                        if level.isDeletable{
+                                            Button{
+                                                data.delete(level: level)
+                                            }label: {
+                                                Image(systemName: "trash.fill")
+                                            }
+                                        }
                                     }
-                                    .buttonStyle(.bordered)
                                 }
                             }
                             .frame(width: vStackWidth)
@@ -103,6 +113,9 @@ struct ContentView: View {
                     SettingsView(inputMethod: $inputMethod, theme: $theme)
                         .presentationDetents([.fraction(0.38), .fraction(0.60)])
                 }
+                .sheet(isPresented: $isShowingNewLevelSheet){
+                    AddNewLevelView(theme: theme)
+                }
                 .safeAreaInset(edge: .bottom, alignment: .leading){
                     Button{
                         isShowingSheet = true
@@ -120,6 +133,13 @@ struct ContentView: View {
                             isKeypadFocused = false
                         }label: {
                             Text("Done")
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing){
+                        Button{
+                            isShowingNewLevelSheet = true
+                        }label:{
+                            Image(systemName: "plus")
                         }
                     }
                 }

@@ -38,7 +38,7 @@ struct SettingsView: View {
                     Button{
                         data.resetGameHistory()
                     }label: {
-                        Text("Delete Game data")
+                        Text("Delete game data")
                     }
                     Button{
                         data.resetAll()

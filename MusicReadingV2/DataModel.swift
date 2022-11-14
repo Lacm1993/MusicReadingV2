@@ -364,9 +364,41 @@ class AppProgress: ObservableObject{
         levels[index + 1].isEnabled = true
         return .True
     }
-    //This function will create custom levels and optionally add them to the array of levels
-    func createLevel(){}
-    
+
+    func addLevel(withNumberOfQuestions numberOfQuestions: Int, timer: Int, notes: Set<Note>){
+        var percentagePerNote = [Note : Level.ScorePerNote]()
+        for note in notes{
+            percentagePerNote[note] = Level.ScorePerNote(right: 0, wrong: 0)
+        }
+        let id = self.count
+        let notesArray = notes.sorted()
+        let level = Level(numberOfQuestions: numberOfQuestions, timer: timer, numberOrTries: 0, maxScore: 0, freeLevel: true, isEnabled: true, isDeletable: true, id: id, notes: notesArray)
+        self.levels.append(level)
+        self.saveData()
+    }
+    func delete(level: Level){
+        guard level.isDeletable else{
+            return
+        }
+        let levelIndex = levels.firstIndex(of: level)!
+        levels.remove(at: levelIndex)
+        for i in 0..<count where levels[i].id >= levelIndex{
+            levels[i].id -= 1
+        }
+        self.saveData()
+    }
+    func note(with name: NoteName, register: Int,and clef: Clef)-> Note{
+        let midiList = MIDIList()
+        let octave = midiList.list.first{ $0.octave == register}!
+        var midiNoteNumber = 0
+        for i in octave.notes{
+            if i.name == name.rawValue{
+                midiNoteNumber = i.number
+                break
+            }
+        }
+        return Note(name: name, register: register, duration: .quarterNote, accidental: .None, clef: clef, MIDINoteNumber: midiNoteNumber)
+    }
     //Only for development, resets the game to the initial state
     func resetAll(){
         levels = [Level(isEnabled: true, id: 0,
@@ -447,5 +479,28 @@ extension FileManager{
             }
         }
         return nil
+    }
+}
+//MIDI List
+struct MIDINote: Codable{
+    var name: String
+    var number: Int
+}
+struct MIDIOctave: Codable{
+    var octave: Int
+    var notes: [MIDINote]
+}
+struct MIDIList{
+    var list: [MIDIOctave]
+    init(){
+        if let url = Bundle.main.url(forResource: "MIDIData", withExtension: "json"){
+            if let data = try? Data(contentsOf: url){
+                if let object = try? JSONDecoder().decode([MIDIOctave].self, from: data){
+                    list = object
+                    return
+                }
+            }
+        }
+        list = []
     }
 }
