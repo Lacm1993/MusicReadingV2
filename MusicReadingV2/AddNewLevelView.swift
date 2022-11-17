@@ -16,6 +16,7 @@ struct AddNewLevelView: View {
     @EnvironmentObject var data: AppProgress
     
     @State private var notes = Set<Note>()
+    @State private var selectedNotes = Set<Note>()
     @State private var numberOfQuestions = 90
     @State private var timer = 120
     
@@ -24,9 +25,13 @@ struct AddNewLevelView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var isShowingNoteAlert = false
-    @State private var editMode : EditMode = .inactive
+    @State private var isEditingEnabled = false
+    
     var isSaveButtonDisabled: Bool{
         notes.count < 2
+    }
+    var areMultipleNotesBeingAdded: Bool{
+        addAllNotesInRegister || addTheSameNotesFromAllAvailableRegisters
     }
     var noteArray: [Note]{
         notes.sorted()
@@ -65,8 +70,17 @@ struct AddNewLevelView: View {
             return "Add note \(noteName.rawValue)\(register)"
         }
     }
-    var areMultipleNotesBeingAdded: Bool{
-        addAllNotesInRegister || addTheSameNotesFromAllAvailableRegisters
+    var selectedNotesLabel: String{
+        switch selectedNotes.count{
+        case 0:
+            return ""
+        case 1:
+            return "Delete 1 item"
+        case _ where selectedNotes.count == notes.count:
+            return "Delete all items"
+        default:
+            return "Delete \(selectedNotes.count) items"
+        }
     }
     
     @State private var noteName : NoteName = .C
@@ -86,39 +100,66 @@ struct AddNewLevelView: View {
                 }header: {
                     Text("Number of questions & Time limit")
                 }
-                .keyboardType(.numberPad)
                 Section{
                     if !notes.isEmpty{
                         Button{
                             withAnimation{
-                                if editMode == .inactive{
-                                    editMode = .active
-                                }else{
-                                    editMode = .inactive
-                                }
+                                isEditingEnabled.toggle()
+                                selectedNotes = []
                             }
                         }label: {
-                            Text(editMode == .inactive ? "Edit" : "Done")
+                            Text(isEditingEnabled ? "Done" : "Edit")
+                        }
+                        if !selectedNotes.isEmpty{
+                            Button{
+                                withAnimation{
+                                    removeSelectedNotes()
+                                }
+                            }label: {
+                                Text(selectedNotesLabel)
+                            }
                         }
                     }
                     List{
                         ForEach(noteArray){note in
-                            (Text(note.name.rawValue) + Text("\(note.register)"))
-                                .padding()
-                                .foregroundColor(.white)
-                                .background(Color(red: 0.212, green: 0.141, blue: 0.310, opacity: 1.000))
-                                .swipeActions(edge: .trailing , allowsFullSwipe: true){
-                                    Button{
-                                        removeNote(note)
-                                    }label: {
-                                        Image(systemName: "trash.fill")
+                            HStack{
+                                if isEditingEnabled{
+                                    if !selectedNotes.contains(note){
+                                        Image(systemName: "circle")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 25, height: 25)
+                                    }else{
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 25, height:  25)
+                                            .foregroundColor(.blue)
                                     }
-                                    .tint(.red)
+                                    
                                 }
+                                (Text(note.name.rawValue) + Text("\(note.register)"))
+                                    .padding()
+                                    .foregroundColor(.white)
+                                    .background(Color(red: 0.212, green: 0.141, blue: 0.310, opacity: 1.000))
+                            }
+                            .swipeActions(edge: .trailing , allowsFullSwipe: true){
+                                Button{
+                                    removeNote(note)
+                                }label: {
+                                    Image(systemName: "trash.fill")
+                                }
+                                .tint(.red)
+                            }
+                            .onTapGesture {
+                                if isEditingEnabled{
+                                    withAnimation{
+                                        selectAndDiselectNote(note)
+                                    }
+                                }
+                            }
                         }
-                        
                     }
-                    .environment(\.editMode, $editMode)
                     Stepper(value: $register, in: 0...8, step: 1){
                         Text("Register: \(register)")
                     }
@@ -142,7 +183,7 @@ struct AddNewLevelView: View {
                         }
                         Toggle("Add the note \(noteName.rawValue) for all available registers in the selected clef", isOn: $addTheSameNotesFromAllAvailableRegisters.animation(.default))
                     }header: {
-                        Text("Notes")
+                        Text("Note")
                     }
                 }
                 Section{
@@ -241,6 +282,27 @@ extension AddNewLevelView{
     }
     func removeNote(_ note: Note){
         notes.remove(note)
+    }
+    func selectAndDiselectNote(_ note: Note){
+        if !selectedNotes.contains(note){
+            selectedNotes.insert(note)
+        }else{
+            selectedNotes.remove(note)
+        }
+    }
+    func removeSelectedNotes(){
+        for note in selectedNotes{
+            notes.remove(note)
+        }
+        selectedNotes = []
+        isEditingEnabled = false
+    }
+    func backGroundForListItem(_ note: Note)-> Color{
+        if isEditingEnabled && selectedNotes.contains(note){
+            return Color.gray.opacity(0.5)
+        }else{
+            return Color.clear
+        }
     }
 }
 
