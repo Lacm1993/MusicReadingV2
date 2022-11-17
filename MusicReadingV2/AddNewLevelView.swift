@@ -90,6 +90,8 @@ struct AddNewLevelView: View {
     var body: some View {
         NavigationStack{
             Form{
+                
+                
                 Section{
                     Stepper(value: $numberOfQuestions, in: 10...200, step: 1){
                         Text("\(numberOfQuestions) questions")
@@ -100,8 +102,9 @@ struct AddNewLevelView: View {
                 }header: {
                     Text("Number of questions & Time limit")
                 }
-                Section{
-                    if !notes.isEmpty{
+                
+                if !notes.isEmpty{
+                    Section{
                         Button{
                             withAnimation{
                                 isEditingEnabled.toggle()
@@ -119,47 +122,52 @@ struct AddNewLevelView: View {
                                 Text(selectedNotesLabel)
                             }
                         }
-                    }
-                    List{
-                        ForEach(noteArray){note in
-                            HStack{
-                                if isEditingEnabled{
-                                    if !selectedNotes.contains(note){
-                                        Image(systemName: "circle")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 25, height: 25)
-                                    }else{
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 25, height:  25)
-                                            .foregroundColor(.blue)
+                        List{
+                            ForEach(noteArray){note in
+                                HStack{
+                                    if isEditingEnabled{
+                                        if !selectedNotes.contains(note){
+                                            Image(systemName: "circle")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 25, height: 25)
+                                        }else{
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 25, height:  25)
+                                                .foregroundColor(.blue)
+                                        }
+                                        
                                     }
-                                    
+                                    (Text(note.name.rawValue) + Text("\(note.register)"))
+                                        .padding()
+                                        .foregroundColor(.white)
+                                        .background(Color(red: 0.212, green: 0.141, blue: 0.310, opacity: 1.000))
                                 }
-                                (Text(note.name.rawValue) + Text("\(note.register)"))
-                                    .padding()
-                                    .foregroundColor(.white)
-                                    .background(Color(red: 0.212, green: 0.141, blue: 0.310, opacity: 1.000))
-                            }
-                            .swipeActions(edge: .trailing , allowsFullSwipe: true){
-                                Button{
-                                    removeNote(note)
-                                }label: {
-                                    Image(systemName: "trash.fill")
+                                .swipeActions(edge: .trailing , allowsFullSwipe: true){
+                                    Button{
+                                        removeNote(note)
+                                    }label: {
+                                        Image(systemName: "trash.fill")
+                                    }
+                                    .tint(.red)
                                 }
-                                .tint(.red)
-                            }
-                            .onTapGesture {
-                                if isEditingEnabled{
-                                    withAnimation{
-                                        selectAndDiselectNote(note)
+                                .onTapGesture {
+                                    if isEditingEnabled{
+                                        withAnimation{
+                                            selectAndDiselectNote(note)
+                                        }
                                     }
                                 }
                             }
                         }
+                    }header: {
+                        Text("Notes")
                     }
+                }
+                
+                Section{
                     Stepper(value: $register, in: 0...8, step: 1){
                         Text("Register: \(register)")
                     }
@@ -186,17 +194,23 @@ struct AddNewLevelView: View {
                         Text("Note")
                     }
                 }
+                
+                
                 Section{
                     Button{
-                        if areMultipleNotesBeingAdded{
-                            addNotes()
-                        }else{
-                            addNote()
+                        withAnimation{
+                            if areMultipleNotesBeingAdded{
+                                addNotes()
+                            }else{
+                                addNote()
+                            }
                         }
                     }label: {
                         Text(addNotesLabel)
                     }
                 }
+                
+                
             }
             .navigationTitle("New custom level")
             .preferredColorScheme(theme == .Dark ? .dark : .light)
@@ -222,6 +236,18 @@ struct AddNewLevelView: View {
                 }
             }message: {
                 Text(alertMessage)
+            }
+            .onChange(of: register){reg in
+                switch reg{
+                case 0...3:
+                    if clef == .G || clef == .C(atLine: 1){
+                        clef = .F
+                    }
+                default:
+                    if clef == .F || clef == .C(atLine: 4){
+                        clef = .G
+                    }
+                }
             }
         }
     }
@@ -296,13 +322,6 @@ extension AddNewLevelView{
         }
         selectedNotes = []
         isEditingEnabled = false
-    }
-    func backGroundForListItem(_ note: Note)-> Color{
-        if isEditingEnabled && selectedNotes.contains(note){
-            return Color.gray.opacity(0.5)
-        }else{
-            return Color.clear
-        }
     }
 }
 
