@@ -66,7 +66,7 @@ struct ContentView: View {
                                         Text("Change the time limit")
                                     }
                                     .focused($isKeypadFocused)
-                                    HStack{
+                                    HStack(spacing: 100){
                                         Button{
                                             saveEdits(for: level)
                                         }label: {
@@ -75,9 +75,12 @@ struct ContentView: View {
                                         .buttonStyle(.bordered)
                                         if level.isDeletable{
                                             Button{
-                                                data.delete(level: level)
+                                                withAnimation{
+                                                    data.delete(level: level)
+                                                }
                                             }label: {
                                                 Image(systemName: "trash.fill")
+                                                    .foregroundColor(.red)
                                             }
                                         }
                                     }

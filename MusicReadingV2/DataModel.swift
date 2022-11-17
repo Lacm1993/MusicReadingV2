@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 //ENUMS
-enum NoteName : String, Identifiable, Equatable, Comparable, Hashable, Codable{
+enum NoteName : String, CaseIterable, Identifiable, Equatable, Comparable, Hashable, Codable{
     static func < (lhs: NoteName, rhs: NoteName) -> Bool {
         let order = Array("CDEFGAB")
         return order.firstIndex(of: Character(lhs.rawValue))! < order.firstIndex(of: Character(rhs.rawValue))!
@@ -57,7 +57,10 @@ enum NoteAccidental : String, Identifiable, Equatable, Comparable, Hashable, Cod
         self
     }
 }
-enum Clef: Hashable, Codable, Identifiable{
+enum Clef: Hashable, Codable, Identifiable, CaseIterable{
+    static var allCases: [Clef]{
+        [.G, .F, .C(atLine: 1), .C(atLine: 2), .C(atLine: 3), .C(atLine: 4)]
+    }
     case G
     case F
     case C(atLine: Int)
@@ -157,7 +160,7 @@ struct Note: Identifiable, Equatable, Comparable, Hashable, Codable{
         return lhs.MIDINoteNumber == rhs.MIDINoteNumber
     }
     var id: String{
-        return "\(name.rawValue)\(accidental.rawValue)\(register), duration:\(duration.rawValue), clef: \(clef.stringValue())"
+        return "\(name.rawValue)\(accidental.rawValue)\(register), duration:\(duration.rawValue), clef: \(clef.stringValue()), MIDI value: \(MIDINoteNumber)"
     }
     fileprivate(set) var name: NoteName
     @RegisterControl fileprivate(set) var register: Int
@@ -171,7 +174,7 @@ struct Note: Identifiable, Equatable, Comparable, Hashable, Codable{
 }
 extension Note : CustomStringConvertible{
     var description: String{
-        return "name: \(self.name)\(accidental.rawValue)\(self.register), duration: \(self.duration), in clef: \(self.clef.stringValue())\n"
+        return "name: \(self.name)\(accidental.rawValue)\(self.register), duration: \(self.duration), in clef: \(self.clef.stringValue()), midiValue: \(MIDINoteNumber)\n"
     }
 }
 struct Level: Identifiable, Codable, Hashable{
@@ -355,9 +358,11 @@ class AppProgress: ObservableObject{
         guard levels[index].isCompleted else{
             return .False
         }
-        guard index < count else{
+
+        guard index + 1 < count else{
             return .None
         }
+        
         guard !levels[index + 1].isEnabled else{
             return .Done
         }
@@ -387,9 +392,8 @@ class AppProgress: ObservableObject{
         }
         self.saveData()
     }
-    func note(with name: NoteName, register: Int,and clef: Clef)-> Note{
-        let midiList = MIDIList()
-        let octave = midiList.list.first{ $0.octave == register}!
+    func note(with name: NoteName, register: Int,and clef: Clef, getMIDINumberFrom midiInfo: MIDIInfo)-> Note{
+        let octave = midiInfo.list.first{ $0.octave == register}!
         var midiNoteNumber = 0
         for i in octave.notes{
             if i.name == name.rawValue{
@@ -490,7 +494,7 @@ struct MIDIOctave: Codable{
     var octave: Int
     var notes: [MIDINote]
 }
-struct MIDIList{
+struct MIDIInfo{
     var list: [MIDIOctave]
     init(){
         if let url = Bundle.main.url(forResource: "MIDIData", withExtension: "json"){

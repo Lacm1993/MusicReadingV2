@@ -11,13 +11,13 @@ struct ButtonInputSubView: View {
     let maxNumber: Int
     let funcToRun: (Int)-> Void
     let level: Level
-    let gridItems : [GridItem] = [.init(.flexible(minimum: 100, maximum: 300))]
+    let gridItems : [GridItem] = [.init(.fixed(90)), .init(.fixed(90)), .init(.fixed(90)), .init(.fixed(90))]
     let pauseGame: Bool
     let width: CGFloat
     let height: CGFloat
     let theme: Theme
     var body: some View {
-        LazyHGrid(rows: gridItems, spacing: 30){
+        LazyVGrid(columns: gridItems, spacing: 30){
             ForEach(0..<maxNumber, id: \.self){number in
                 Button{
                     funcToRun(number)

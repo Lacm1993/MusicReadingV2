@@ -1,42 +1,7 @@
 [
  {
-   "octave" : -1,
-   "notes" : [
-   {"name": "C", "number": 0},
-   {"name": "C#", "number": 1},
-   {"name": "Db", "number": 1},
-   {"name": "D", "number": 2},
-   {"name": "D#", "number": 3},
-   {"name": "Eb", "number": 3},
-   {"name": "E", "number": 4},
-   {"name": "F", "number": 5},
-   {"name": "F#", "number": 6},
-   {"name": "Gb", "number": 6},
-   {"name": "G", "number": 7},
-   {"name": "G#", "number": 8},
-   {"name": "Ab", "number": 8},
-   {"name": "A", "number": 9},
-   {"name": "A#", "number": 10},
-   {"name": "Bb", "number": 10},
-   {"name": "B", "number": 11}
-   ]
- },
- {
    "octave" : 0,
    "notes" : [
-   {"name": "C", "number": 12},
-   {"name": "C#", "number": 13},
-   {"name": "Db", "number": 13},
-   {"name": "D", "number": 14},
-   {"name": "D#", "number": 15},
-   {"name": "Eb", "number": 15},
-   {"name": "E", "number": 16},
-   {"name": "F", "number": 17},
-   {"name": "F#", "number": 18},
-   {"name": "Gb", "number": 18},
-   {"name": "G", "number": 19},
-   {"name": "G#", "number": 20},
-   {"name": "Ab", "number": 20},
    {"name": "A", "number": 21},
    {"name": "A#", "number": 22},
    {"name": "Bb", "number": 22},
@@ -201,44 +166,6 @@
    "octave" : 8,
    "notes" : [
    {"name": "C", "number": 108},
-   {"name": "C#", "number": 109},
-   {"name": "Db", "number": 109},
-   {"name": "D", "number": 110},
-   {"name": "D#", "number": 111},
-   {"name": "Eb", "number": 111},
-   {"name": "E", "number": 112},
-   {"name": "F", "number": 113},
-   {"name": "F#", "number": 114},
-   {"name": "Gb", "number": 114},
-   {"name": "G", "number": 115},
-   {"name": "G#", "number": 116},
-   {"name": "Ab", "number": 116},
-   {"name": "A", "number": 117},
-   {"name": "A#", "number": 118},
-   {"name": "Bb", "number": 118},
-   {"name": "B", "number": 119}
-   ]
- },
- {
-   "octave" : 9,
-   "notes" : [
-   {"name": "C", "number": 120},
-   {"name": "C#", "number": 121},
-   {"name": "Db", "number": 121},
-   {"name": "D", "number": 122},
-   {"name": "D#", "number": 123},
-   {"name": "Eb", "number": 123},
-   {"name": "E", "number": 124},
-   {"name": "F", "number": 125},
-   {"name": "F#", "number": 126},
-   {"name": "Gb", "number": 126},
-   {"name": "G", "number": 127},
-   {"name": "G#", "number": 128},
-   {"name": "Ab", "number": 128},
-   {"name": "A", "number": 129},
-   {"name": "A#", "number": 130},
-   {"name": "Bb", "number": 130},
-   {"name": "B", "number": 131}
    ]
  }
 ]
