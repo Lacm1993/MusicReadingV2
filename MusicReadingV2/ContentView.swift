@@ -75,9 +75,7 @@ struct ContentView: View {
                                         .buttonStyle(.bordered)
                                         if level.isDeletable{
                                             Button{
-                                                withAnimation{
-                                                    data.delete(level: level)
-                                                }
+                                                data.delete(level: level)
                                             }label: {
                                                 Image(systemName: "trash.fill")
                                                     .foregroundColor(.red)
