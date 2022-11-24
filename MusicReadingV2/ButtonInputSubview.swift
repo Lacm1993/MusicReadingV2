@@ -11,22 +11,52 @@ struct ButtonInputSubView: View {
     let maxNumber: Int
     let funcToRun: (Int)-> Void
     let level: Level
-    let gridItems : [GridItem] = [.init(.fixed(90)), .init(.fixed(90)), .init(.fixed(90)), .init(.fixed(90))]
     let pauseGame: Bool
-    let width: CGFloat
-    let height: CGFloat
+    let buttonSize: CGSize
+    let font: CGFloat
     let theme: Theme
     var body: some View {
-        LazyVGrid(columns: gridItems, spacing: 30){
-            ForEach(0..<maxNumber, id: \.self){number in
-                Button{
-                    funcToRun(number)
-                }label: {
-                    Text(level.uniqueNoteNames[number].rawValue)
+        if maxNumber <= 4{
+            VStack(alignment: .center){
+                HStack{
+                    ForEach(0..<maxNumber, id: \.self){number in
+                        Button{
+                            funcToRun(number)
+                        }label: {
+                            Text(level.uniqueNoteNames[number].rawValue)
+                        }
+                        .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
+                        .disabled(pauseGame)
+                    }
                 }
-                .buttonStyle(GameButton(width: width, height: height, theme: theme, pauseGame: pauseGame))
-                .disabled(pauseGame)
             }
+            .font(.system(size: font))
+        }else{
+            VStack(alignment: .center){
+                HStack{
+                    ForEach(0..<4, id: \.self){number in
+                        Button{
+                            funcToRun(number)
+                        }label: {
+                            Text(level.uniqueNoteNames[number].rawValue)
+                        }
+                        .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
+                        .disabled(pauseGame)
+                    }
+                }
+                HStack{
+                    ForEach(4..<maxNumber, id: \.self){number in
+                        Button{
+                            funcToRun(number)
+                        }label: {
+                            Text(level.uniqueNoteNames[number].rawValue)
+                        }
+                        .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
+                        .disabled(pauseGame)
+                    }
+                }
+            }
+            .font(.system(size: font))
         }
     }
 }
@@ -34,7 +64,7 @@ struct ButtonInputSubView: View {
 struct ButtonInputSubView_Previews: PreviewProvider {
     static var funcToPreview = {(int: Int) -> Void in }
     static var previews: some View {
-        ButtonInputSubView(maxNumber: 10, funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, width: 10, height: 10, theme: .Dark)
+        ButtonInputSubView(maxNumber: 10, funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, buttonSize: CGSize.zero, font: 5, theme: .Dark)
     }
 }
 

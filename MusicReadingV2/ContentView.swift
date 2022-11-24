@@ -10,16 +10,21 @@ import SwiftUI
 struct ContentView: View {
     @StateObject var data = AppProgress()
     @StateObject var navigationHistory = NavigationHistory()
+    
     @Environment(\.scenePhase) var scenePhase
+    
     @State private var levelToEdit : Int?
     @State private var isShowingNewLevelSheet = false
     @State private var isShowingSheet = false
     @State private var isAlertShowing = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
+    
     @AppStorage("InputMethod") var inputMethod : InputMethod = .Buttons
     @AppStorage("Theme") var theme: Theme = .Dark
     @FocusState var isKeypadFocused : Bool
+    
+    @State private var levelToDelete = -1
     
     var body: some View {
         NavigationStack(path: $navigationHistory.stack){
@@ -72,10 +77,9 @@ struct ContentView: View {
                                         }label: {
                                             Text("Save")
                                         }
-                                        .buttonStyle(.bordered)
                                         if level.isDeletable{
                                             Button{
-                                                data.delete(level: level)
+                                                deleteLevel(level: level)
                                             }label: {
                                                 Image(systemName: "trash.fill")
                                                     .foregroundColor(.red)
@@ -178,11 +182,13 @@ extension ContentView{
         }
         isAlertShowing = true
     }
+    func deleteLevel(level: Level){
+        levelToEdit = level.id
+        data.delete(level: level)
+    }
 }
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
 }
-

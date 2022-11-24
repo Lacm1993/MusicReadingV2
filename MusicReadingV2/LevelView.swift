@@ -57,10 +57,12 @@ struct LevelView: View {
     
     var body: some View {
         GeometryReader{geo in
-            
+            //The sizes for all screen elements are here:
             let vStackSpacing = geo.size.height * 0.08
-            let imageFrame = CGSize(width: geo.size.width * 0.20, height: geo.size.height * 0.20)
-            let gameButtonFrame = CGSize(width: geo.size.width * 0.20, height: geo.size.height * 0.12)
+            let imageFrame = CGSize(width: geo.size.width * 0.10, height: geo.size.height * 0.10)
+            let waitForInputFrameWidth = geo.size.width * 0.85
+            let buttonSize = CGSize(width: geo.size.width * 0.18, height: geo.size.height * 0.10)
+            let buttonFont = geo.size.height > geo.size.width ? geo.size.height * 0.03 : geo.size.height * 0.045
             
             ScrollView(.vertical){
                 VStack(spacing: vStackSpacing){
@@ -74,14 +76,14 @@ struct LevelView: View {
                         }else{
                             Text(waitingForInputMessage)
                                 .multilineTextAlignment(.center)
-                                .frame(width: imageFrame.width, height: imageFrame.height)
+                                .frame(width: waitForInputFrameWidth, height: imageFrame.height)
                         }
                         Text(level.note(at: solution)?.id ?? "")
                             .padding()
                     }
                     switch inputMethod {
                     case .Buttons:
-                        ButtonInputSubView(maxNumber: level.uniqueNoteNames.count, funcToRun: judge, level: level, pauseGame: pauseGame, width: gameButtonFrame.width, height: gameButtonFrame.height, theme: theme)
+                        ButtonInputSubView(maxNumber: level.uniqueNoteNames.count, funcToRun: judge, level: level, pauseGame: pauseGame, buttonSize: buttonSize, font: buttonFont, theme: theme)
                     case .MIDI:
                         if let event = midiManager.midiEventNoteNumber{
                             Text("Note number: \(event)")
@@ -94,8 +96,7 @@ struct LevelView: View {
                         Text("Audio")
                     }
                     
-                    Text("remaining questions: \(questionsRemaining)")
-                        .frame(width: 200)
+                    Text("Remaining questions: \(questionsRemaining)")
 
                     HStack(spacing: 20){
                         VStack(alignment: .center){
@@ -112,6 +113,7 @@ struct LevelView: View {
                 .textAndSystemImagesColor(preferedScheme: theme)
             }
             .navigationTitle(Text("Level \(id)"))
+            .navigationBarTitleDisplayMode(.inline)
             .theme(preferedScheme: theme)
             .customToolbarApperance()
             .sheet(isPresented: $isShowingSheet, onDismiss: {reset()}){

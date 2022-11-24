@@ -30,16 +30,41 @@ enum NoteDuration : Double, Identifiable, Equatable, Comparable, Hashable, Codab
         return lhs.rawValue < rhs.rawValue
     }
     case wholeNote = 1
+    case dottedHalfNote = 0.75
     case halfNote = 0.5
+    case dotterQuarterNote = 0.375
     case quarterNote = 0.25
+    case dottedEightNote = 0.1875
     case eightNote = 0.125
+    case dottedSixteenthNote = 0.09375
     case sixteenthNote = 0.0625
+    case dottedThirtySecondNote = 0.046875
     case thirtySecondNote = 0.03125
     case sixtyFourNote = 0.015625
     var id: Self{
         self
     }
+    static func +(lhs: NoteDuration, rhs: NoteDuration)-> NoteDuration?{
+        return NoteDuration(rawValue: lhs.rawValue + rhs.rawValue)
+    }
+    static func -(lhs: NoteDuration, rhs: NoteDuration)-> NoteDuration?{
+        return NoteDuration(rawValue: lhs.rawValue - rhs.rawValue)
+    }
 }
+
+
+extension Array where Iterator.Element == Int{
+    static func *(lhs: [Element], rhs: [Element])-> [Element]{
+        let shortestSide = lhs.count <= rhs.count ? lhs : rhs
+        let largestSide = lhs.count > rhs.count ? lhs : rhs
+        var newArray = [Element]()
+        for i in 0..<shortestSide.count{
+            newArray.append(shortestSide[i] * largestSide[i])
+        }
+        return newArray
+    }
+}
+
 enum NoteAccidental : String, Identifiable, Equatable, Comparable, Hashable, Codable{
     static func < (lhs: NoteAccidental, rhs: NoteAccidental) -> Bool {
         switch (lhs, rhs){
@@ -105,6 +130,7 @@ enum NextLevelUnlocked{
     case False
     case Done
     case None
+    case NotApplicable
 }
 //PROPERTYWRAPPERS
 @propertyWrapper
@@ -363,9 +389,13 @@ class AppProgress: ObservableObject{
             return .None
         }
         
+        guard !levels[index + 1].freeLevel else{
+            return .NotApplicable
+        }
         guard !levels[index + 1].isEnabled else{
             return .Done
         }
+
         levels[index + 1].isEnabled = true
         return .True
     }

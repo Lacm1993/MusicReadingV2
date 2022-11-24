@@ -75,6 +75,8 @@ struct StatisticsView: View {
             str += "You have completed every level, congrats!"
         case .Done:
             str += ""
+        case .NotApplicable:
+            str += ""
         }
         var s1 = AttributedString(str)
         if isNextLevelUnlocked == .True{
