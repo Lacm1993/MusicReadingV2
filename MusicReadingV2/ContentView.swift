@@ -35,122 +35,148 @@ struct ContentView: View {
                 let hStackWidth = space.width * 0.45
                 let navigationLinkLabelWidth = space.width * 0.30
                 
-                ScrollView(.vertical, showsIndicators: false){
-                    VStack(spacing: 10){
-                        ForEach($data.levels){$level in
-                            VStack{
-                                HStack(spacing: hStackWidth){
-                                    NavigationLink(value: level){
-                                        HStack(spacing: 20){
-                                            Text("Level \(level.id)")
-                                            Image(systemName: "play.fill")
+                ScrollViewReader{scrollManager in
+                    ScrollView(.vertical, showsIndicators: false){
+                        VStack(spacing: 10){
+                            ForEach($data.levels){$level in
+                                VStack{
+                                    HStack(spacing: hStackWidth){
+                                        NavigationLink(value: level){
+                                            HStack(spacing: 20){
+                                                Text("Level \(level.id)")
+                                                Image(systemName: "play.fill")
+                                                    .font(.largeTitle)
+                                            }
+                                            .navigationLinkBackgroundLabel(preferedScheme: theme, width: navigationLinkLabelWidth)
+                                        }
+                                        Button{
+                                            withAnimation{
+                                                if let levelToEdit, levelToEdit == level.id{
+                                                    self.levelToEdit = nil
+                                                }else{
+                                                    levelToEdit = level.id
+                                                }
+                                            }
+                                        }label: {
+                                            Image(systemName: "gearshape.fill")
                                                 .font(.largeTitle)
                                         }
-                                        .navigationLinkBackgroundLabel(preferedScheme: theme, width: navigationLinkLabelWidth)
                                     }
+                                    .textAndSystemImagesColor(preferedScheme: theme)
+                                    if let levelToEdit, levelToEdit == level.id{
+                                        TextField(value: $level.numberOfQuestions, format: .number){
+                                            Text("Change number of questions")
+                                        }
+                                        .focused($isKeypadFocused)
+                                        TextField(value: $level.timer, format: .number){
+                                            Text("Change the time limit")
+                                        }
+                                        .focused($isKeypadFocused)
+                                        HStack(spacing: 100){
+                                            Button{
+                                                saveEdits(for: level)
+                                            }label: {
+                                                Text("Save")
+                                            }
+                                            if level.isDeletable{
+                                                Button{
+                                                    deleteLevel(level: level)
+                                                }label: {
+                                                    Image(systemName: "trash.fill")
+                                                        .foregroundColor(.red)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .frame(width: vStackWidth)
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .textFieldStyle(.roundedBorder)
+                                .keyboardType(.numberPad)
+                                .disabled(!level.isEnabled)
+                                .disabledAppearance(check: !level.isEnabled)
+                                .id(level.id)
+                                
+                            }
+                            .navigationDestination(for: Level.self){level in
+                                LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical)
+                    }
+                    .theme(preferedScheme: theme)
+                    .navigationTitle(Text("Music reading"))
+                    .customToolbarApperance()
+                    .alert(alertTitle, isPresented: $isAlertShowing){
+                        Button(action: {}){
+                            Text("OK")
+                        }
+                    }message: {
+                        Text(alertMessage)
+                    }
+                    .sheet(isPresented: $isShowingSheet){
+                        SettingsView(inputMethod: $inputMethod, theme: $theme)
+                            .presentationDetents([.fraction(0.38), .fraction(0.60)])
+                    }
+                    .sheet(isPresented: $isShowingNewLevelSheet){
+                        AddNewLevelView(theme: theme)
+                    }
+                    .safeAreaInset(edge: .bottom, alignment: .leading){
+                        Button{
+                            isShowingSheet = true
+                        }label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.largeTitle)
+                                .textAndSystemImagesColor(preferedScheme: theme)
+                        }
+                        .padding()
+                    }
+                    .toolbar{
+                        ToolbarItemGroup(placement: .keyboard){
+                            Spacer()
+                            Button{
+                                isKeypadFocused = false
+                            }label: {
+                                Text("Done")
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing){
+                            HStack{
+                                //This views should be hidden and only shown if the user has purchased the hability to create custom levels
+                                ControlGroup{
                                     Button{
                                         withAnimation{
-                                            if let levelToEdit, levelToEdit == level.id{
-                                                self.levelToEdit = nil
-                                            }else{
-                                                levelToEdit = level.id
-                                            }
+                                            scrollManager.scrollTo(0, anchor: UnitPoint(x: space.midX, y: space .minY))
                                         }
                                     }label: {
-                                        Image(systemName: "gearshape.fill")
-                                            .font(.largeTitle)
+                                        Text("Mandatory")
                                     }
-                                }
-                                .textAndSystemImagesColor(preferedScheme: theme)
-                                if let levelToEdit, levelToEdit == level.id{
-                                    TextField(value: $level.numberOfQuestions, format: .number){
-                                        Text("Change number of questions")
-                                    }
-                                    .focused($isKeypadFocused)
-                                    TextField(value: $level.timer, format: .number){
-                                        Text("Change the time limit")
-                                    }
-                                    .focused($isKeypadFocused)
-                                    HStack(spacing: 100){
-                                        Button{
-                                            saveEdits(for: level)
-                                        }label: {
-                                            Text("Save")
-                                        }
-                                        if level.isDeletable{
-                                            Button{
-                                                deleteLevel(level: level)
-                                            }label: {
-                                                Image(systemName: "trash.fill")
-                                                    .foregroundColor(.red)
+                                    Button{
+                                        if let firstFreeLevel = data.levels.first(where: {level in level.freeLevel}){
+                                            withAnimation{
+                                                scrollManager.scrollTo(firstFreeLevel.id, anchor: .top)
                                             }
                                         }
+                                    }label:{
+                                        Text("Custom")
                                     }
                                 }
+                                Divider()
+                                Button{
+                                    isShowingNewLevelSheet = true
+                                }label:{
+                                    Image(systemName: "plus")
+                                }
                             }
-                            .frame(width: vStackWidth)
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .textFieldStyle(.roundedBorder)
-                            .keyboardType(.numberPad)
-                            .disabled(!level.isEnabled)
-                            .disabledAppearance(check: !level.isEnabled)
-                        }
-                        .navigationDestination(for: Level.self){level in
-                            LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical)
-                }
-                .theme(preferedScheme: theme)
-                .navigationTitle(Text("Music reading"))
-                .customToolbarApperance()
-                .alert(alertTitle, isPresented: $isAlertShowing){
-                    Button(action: {}){
-                        Text("OK")
-                    }
-                }message: {
-                    Text(alertMessage)
-                }
-                .sheet(isPresented: $isShowingSheet){
-                    SettingsView(inputMethod: $inputMethod, theme: $theme)
-                        .presentationDetents([.fraction(0.38), .fraction(0.60)])
-                }
-                .sheet(isPresented: $isShowingNewLevelSheet){
-                    AddNewLevelView(theme: theme)
-                }
-                .safeAreaInset(edge: .bottom, alignment: .leading){
-                    Button{
-                        isShowingSheet = true
-                    }label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.largeTitle)
-                            .textAndSystemImagesColor(preferedScheme: theme)
-                    }
-                    .padding()
-                }
-                .toolbar{
-                    ToolbarItemGroup(placement: .keyboard){
-                        Spacer()
-                        Button{
-                            isKeypadFocused = false
-                        }label: {
-                            Text("Done")
+                    .onChange(of: scenePhase){phase in
+                        if phase == .background || phase == .inactive{
+                            navigationHistory.saveStackHistory()
                         }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing){
-                        Button{
-                            isShowingNewLevelSheet = true
-                        }label:{
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
-                .onChange(of: scenePhase){phase in
-                    if phase == .background || phase == .inactive{
-                        navigationHistory.saveStackHistory()
                     }
                 }
             }
