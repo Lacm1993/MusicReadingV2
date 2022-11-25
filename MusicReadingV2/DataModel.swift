@@ -29,6 +29,8 @@ enum NoteDuration : Double, Identifiable, Equatable, Comparable, Hashable, Codab
     static func < (lhs: NoteDuration, rhs: NoteDuration) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
+    case doubleWholeNote = 2
+    case dottedWholeNote = 1.5
     case wholeNote = 1
     case dottedHalfNote = 0.75
     case halfNote = 0.5
@@ -40,10 +42,22 @@ enum NoteDuration : Double, Identifiable, Equatable, Comparable, Hashable, Codab
     case sixteenthNote = 0.0625
     case dottedThirtySecondNote = 0.046875
     case thirtySecondNote = 0.03125
+    case dottedSixtyFourNote = 0.0234385
     case sixtyFourNote = 0.015625
+    case oneHundredTwentyEightNote = 0.0078125
     var id: Self{
         self
     }
+    //THESE IS PLANNING AHEAD TO A FUTURE VERSION OF THE APP THAT INCLUDES WRITTING, RIGHT NOW THIS WHOLE ENUM IS KINDA POINTLESS.
+    
+    //The operators work by adding the raw value of two NoteDuration instances and returning an optional NoteDuration (because not every possible note is accounted for)
+    
+    //The idea would be to limit the writting to a single measure and the operators would be used mainly to check when the measure is full or (if you are lacking notes or remove notes) to check which types of notes could fill the remaining space.
+    
+    //Ties would be handled differently, maybe with new properties to the note object (for example, one note has isFirstTied set to true, and the other has isLastTied set to true) and draw the line between those notes, or maybe if your last noteDuration goes beyond the limit of the measure allow it to "leak out" to the next one (broke the note in two the value that still fits the measure remains and the remainder moves into a new note), in the end maybe the combination of the two is what will work.
+    
+    //I will also need a measure object(maybe another enum) that has whats the maximum note value allowed (for example 4/4 = 1) to check when the measure is full and avoid going overboard
+    
     static func +(lhs: NoteDuration, rhs: NoteDuration)-> NoteDuration?{
         return NoteDuration(rawValue: lhs.rawValue + rhs.rawValue)
     }
@@ -361,6 +375,12 @@ class AppProgress: ObservableObject{
     @AppStorage(AppProgress.enabledLevelsKey) var enabledLevels = 1
     var count: Int{
         levels.count
+    }
+    var firstMandatoryLevelID: Int{
+        0
+    }
+    var firstCustomLevelID: Int{
+        self.levels.first(where: {level in level.freeLevel})?.id ?? 0
     }
     func level(withID id: Int)-> Level{
         return levels.first{level in level.id == id} ?? Level()

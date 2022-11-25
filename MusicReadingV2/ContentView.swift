@@ -12,6 +12,8 @@ struct ContentView: View {
     @StateObject var navigationHistory = NavigationHistory()
     
     @Environment(\.scenePhase) var scenePhase
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
     
     @State private var levelToEdit : Int?
     @State private var isShowingNewLevelSheet = false
@@ -19,12 +21,13 @@ struct ContentView: View {
     @State private var isAlertShowing = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
+    @State private var levelToDelete = -1
+    
     
     @AppStorage("InputMethod") var inputMethod : InputMethod = .Buttons
     @AppStorage("Theme") var theme: Theme = .Dark
+   
     @FocusState var isKeypadFocused : Bool
-    
-    @State private var levelToDelete = -1
     
     var body: some View {
         NavigationStack(path: $navigationHistory.stack){
@@ -42,11 +45,7 @@ struct ContentView: View {
                                 VStack{
                                     HStack(spacing: hStackWidth){
                                         NavigationLink(value: level){
-                                            HStack(spacing: 20){
-                                                Text("Level \(level.id)")
-                                                Image(systemName: "play.fill")
-                                                    .font(.largeTitle)
-                                            }
+                                            navigationLinkLabel(level.id)
                                             .navigationLinkBackgroundLabel(preferedScheme: theme, width: navigationLinkLabelWidth)
                                         }
                                         Button{
@@ -145,23 +144,27 @@ struct ContentView: View {
                         }
                         ToolbarItem(placement: .navigationBarTrailing){
                             HStack{
-                                //This views should be hidden and only shown if the user has purchased the hability to create custom levels
-                                ControlGroup{
-                                    Button{
-                                        withAnimation{
-                                            scrollManager.scrollTo(0, anchor: UnitPoint(x: space.midX, y: space .minY))
-                                        }
-                                    }label: {
-                                        Text("Mandatory")
+                                let func1 = {
+                                    withAnimation{
+                                        scrollManager.scrollTo(data.firstMandatoryLevelID, anchor: UnitPoint(x: space.midX, y: space .minY))
                                     }
-                                    Button{
-                                        if let firstFreeLevel = data.levels.first(where: {level in level.freeLevel}){
-                                            withAnimation{
-                                                scrollManager.scrollTo(firstFreeLevel.id, anchor: .top)
-                                            }
-                                        }
-                                    }label:{
-                                        Text("Custom")
+                                }
+                                let func2 = {
+                                    withAnimation{
+                                        scrollManager.scrollTo(data.firstCustomLevelID, anchor: .top)
+                                    }
+                                }
+                                if horizontalSizeClass == .regular{
+                                    ScrollReaderRegularView{
+                                        func1()
+                                    }funcToRun2: {
+                                        func2()
+                                    }
+                                }else{
+                                    ScrollreaderCompactView{
+                                        func1()
+                                    }funcToRun2: {
+                                        func2()
                                     }
                                 }
                                 Divider()
@@ -185,6 +188,8 @@ struct ContentView: View {
         .environmentObject(data)
     }
 }
+
+
 extension ContentView{
     func saveEdits(for level: Level){
         guard level.numberOfQuestions >= 90 else{
@@ -213,6 +218,27 @@ extension ContentView{
         data.delete(level: level)
     }
 }
+
+
+extension ContentView{
+    func navigationLinkLabel(_ id: Int)-> some View{
+        if horizontalSizeClass == .compact && dynamicTypeSize >= .xxLarge{
+            return HStack(spacing: 20){
+                Text("L\(id)")
+                Image(systemName: "play.fill")
+                    .font(.largeTitle)
+            }
+        }else{
+            return HStack(spacing: 20){
+                Text("Level \(id)")
+                Image(systemName: "play.fill")
+                    .font(.largeTitle)
+            }
+        }
+    }
+}
+
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()

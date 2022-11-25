@@ -27,6 +27,7 @@
 		AE8FEA5329207A5C0055E15B /* LevelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA5229207A5C0055E15B /* LevelView.swift */; };
 		AE8FEA55292087260055E15B /* ButtonInputSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA54292087260055E15B /* ButtonInputSubview.swift */; };
 		AE8FEA5729208CC40055E15B /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8FEA5629208CC40055E15B /* StatisticsView.swift */; };
+		AEA85849292F1EAB000CF408 /* ScrollReaderOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA85848292F1EAB000CF408 /* ScrollReaderOptions.swift */; };
 		AEA9A63329217F0E00CA056A /* AddNewLevelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA9A63229217F0E00CA056A /* AddNewLevelView.swift */; };
 		AEA9A6372921E54900CA056A /* MIDIData.json in Resources */ = {isa = PBXBuildFile; fileRef = AEA9A6362921E54900CA056A /* MIDIData.json */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		AE8FEA5229207A5C0055E15B /* LevelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelView.swift; sourceTree = "<group>"; };
 		AE8FEA54292087260055E15B /* ButtonInputSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInputSubview.swift; sourceTree = "<group>"; };
 		AE8FEA5629208CC40055E15B /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
+		AEA85848292F1EAB000CF408 /* ScrollReaderOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollReaderOptions.swift; sourceTree = "<group>"; };
 		AEA9A63229217F0E00CA056A /* AddNewLevelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNewLevelView.swift; sourceTree = "<group>"; };
 		AEA9A6362921E54900CA056A /* MIDIData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = MIDIData.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -132,6 +134,7 @@
 				AE8FEA5629208CC40055E15B /* StatisticsView.swift */,
 				AE8FEA4E292061650055E15B /* SettingsView.swift */,
 				AEA9A63229217F0E00CA056A /* AddNewLevelView.swift */,
+				AEA85848292F1EAB000CF408 /* ScrollReaderOptions.swift */,
 				AE8FEA50292063D40055E15B /* ViewModifiers.swift */,
 				AE8FEA3D292049E50055E15B /* DataModel.swift */,
 				AE8FEA4C29205F460055E15B /* MIDIImplementation.swift */,
@@ -310,6 +313,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEA85849292F1EAB000CF408 /* ScrollReaderOptions.swift in Sources */,
 				AE8FEA5329207A5C0055E15B /* LevelView.swift in Sources */,
 				AE8FEA4F292061650055E15B /* SettingsView.swift in Sources */,
 				AE8FEA4D29205F460055E15B /* MIDIImplementation.swift in Sources */,

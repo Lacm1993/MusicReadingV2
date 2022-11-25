@@ -57,7 +57,7 @@ struct LevelView: View {
     
     var body: some View {
         GeometryReader{geo in
-            //The sizes for all screen elements are here:
+            
             let vStackSpacing = geo.size.height * 0.08
             let imageFrame = CGSize(width: geo.size.width * 0.10, height: geo.size.height * 0.10)
             let waitForInputFrameWidth = geo.size.width * 0.85

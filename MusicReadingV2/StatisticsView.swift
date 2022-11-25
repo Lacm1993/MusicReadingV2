@@ -18,6 +18,7 @@ struct StatisticsView: View {
     let score : Int
     let theme: Theme
     let isNextLevelUnlocked: NextLevelUnlocked
+    
     var levelScoreLabel: AttributedString{
         let str = "**Score per note this time**"
         if let s1 = try? AttributedString(markdown: str){
@@ -88,11 +89,14 @@ struct StatisticsView: View {
         }
         return s1
     }
+    
     var body: some View {
         NavigationStack{
             GeometryReader{geo in
+                
                 let outerVStackSpacing = geo.size.height * 0.05
                 let chartFrame = CGSize(width: geo.size.width * 0.50, height: geo.size.width * 0.50)
+                
                 ScrollView(.vertical){
                     VStack(spacing: outerVStackSpacing){
                         VStack(spacing: 10){

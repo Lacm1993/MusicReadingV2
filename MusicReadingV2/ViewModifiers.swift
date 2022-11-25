@@ -109,3 +109,25 @@ extension View{
             )
     }
 }
+
+struct AccessibilityElements: ViewModifier{
+    let label: String?
+    let hint: String?
+    let childBehavior: AccessibilityChildBehavior?
+    let accessibilityValue: String?
+    let accessibilityFunc: (AccessibilityAdjustmentDirection)-> Void
+    func body(content: Content) -> some View {
+        content
+            .accessibilityElement(children: childBehavior ?? AccessibilityChildBehavior.ignore)
+            .accessibilityLabel(label ?? "")
+            .accessibilityHint(hint ?? "")
+            .accessibilityValue(accessibilityValue ?? "")
+            .accessibilityAdjustableAction(accessibilityFunc)
+    }
+}
+extension View{
+    func accessibilityElements(label: String? = nil, hint: String? = nil, childBehavior: AccessibilityChildBehavior? = nil, value: String? = nil, accessibilityFunc: @escaping (AccessibilityAdjustmentDirection)-> Void)-> some View{
+        return self
+            .modifier(AccessibilityElements(label: label, hint: hint, childBehavior: childBehavior, accessibilityValue: value, accessibilityFunc: accessibilityFunc))
+    }
+}

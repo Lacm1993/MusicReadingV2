@@ -19,13 +19,15 @@ struct AddNewLevelView: View {
     @State private var selectedNotes = Set<Note>()
     @State private var numberOfQuestions = 90
     @State private var timer = 120
-    
     @State private var addAllNotesInRegister = false
     @State private var addTheSameNotesFromAllAvailableRegisters = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var isShowingNoteAlert = false
     @State private var isEditingEnabled = false
+    @State private var noteName : NoteName = .C
+    @State private var register = 4
+    @State private var clef : Clef = .G
     
     var isSaveButtonDisabled: Bool{
         notes.count < 2
@@ -82,29 +84,57 @@ struct AddNewLevelView: View {
             return "Delete \(selectedNotes.count) items"
         }
     }
-    
-    @State private var noteName : NoteName = .C
-    @State private var register = 4
-    @State private var clef : Clef = .G
+
     
     var body: some View {
         NavigationStack{
             Form{
-                
-                
                 Section{
+                    
+                    
                     Stepper(value: $numberOfQuestions, in: 10...200, step: 1){
                         Text("\(numberOfQuestions) questions")
                     }
+                    .accessibilityElements(label: "Number of questions.", hint: "Set the number of questions for this level, the minimum number of questions is ninety.", childBehavior: .ignore, value: "\(numberOfQuestions) questions selected"){action in
+                        switch action {
+                        case .increment:
+                            numberOfQuestions += 1
+                        case .decrement:
+                            if numberOfQuestions > 90{
+                                numberOfQuestions -= 1
+                            }
+                        @unknown default:
+                            fatalError("Accesibility adjustable action currently not handled")
+                        }
+                    }
+                    
+                    
                     Stepper(value: $timer, in: 10...200, step: 1){
                         Text("\(timer) seconds")
                     }
+                    .accessibilityElements(label: "Timer.", hint: "Set the time limit for this level, the minimum number of seconds is thirty.", childBehavior: .ignore, value: "\(timer) seconds."){action in
+                        switch action {
+                        case .increment:
+                            timer += 1
+                        case .decrement:
+                            if timer > 30{
+                                timer -= 1
+                            }
+                        @unknown default:
+                            fatalError("Accesibility adjustable action currently not handled")
+                        }
+                    }
+                    
+                    
                 }header: {
                     Text("Number of questions & Time limit")
                 }
                 
+                
                 if !notes.isEmpty{
                     Section{
+                        
+                        
                         Button{
                             withAnimation{
                                 isEditingEnabled.toggle()
@@ -113,6 +143,9 @@ struct AddNewLevelView: View {
                         }label: {
                             Text(isEditingEnabled ? "Done" : "Edit")
                         }
+                        .accessibilityHint(!isEditingEnabled ? "Remove notes from the custom level you're creating." : "Get out of edit mode without deleting any note.")
+                        
+                        
                         if !selectedNotes.isEmpty{
                             Button{
                                 withAnimation{
@@ -121,7 +154,10 @@ struct AddNewLevelView: View {
                             }label: {
                                 Text(selectedNotesLabel)
                             }
+                            .accessibilityHint("Remove the selection from the custom level, current selection is:  \(selectedNotes.map({ $0.name.rawValue + String($0.register)}).joined(separator: ", ") )")
                         }
+                        
+                        
                         List{
                             ForEach(noteArray){note in
                                 HStack{
@@ -160,6 +196,12 @@ struct AddNewLevelView: View {
                                         }
                                     }
                                 }
+                                .accessibilityElement()
+                                .accessibilityLabel("\(note.name.rawValue + String(note.register))")
+                                .accessibilityHint(isEditingEnabled ? "Double tap to select" : "")
+                                .accessibilityAction(named: "Select note"){
+                                    selectAndDiselectNote(note)
+                                }
                             }
                         }
                     }header: {
@@ -167,29 +209,118 @@ struct AddNewLevelView: View {
                     }
                 }
                 
+                
                 Section{
+                    
+                    
                     Stepper(value: $register, in: 0...8, step: 1){
                         Text("Register: \(register)")
                     }
+                    .accessibilityElements(label: "Register.", hint: "Set how high or low the note is located in the staff, the range is between 0 and 9.", childBehavior: .ignore, value: "Register \(register) is selected."){action in
+                        switch action {
+                        case .increment:
+                            if register < 8{
+                                register += 1
+                            }
+                        case .decrement:
+                            if register > 0{
+                                register -= 1
+                            }
+                        @unknown default:
+                            fatalError("Accesibility adjustable action currently not handled")
+                        }
+                        
+                    }
+                    
                     
                     Picker("Choose a clef", selection: $clef){
                         ForEach(clefsBasedOnRegister){clef in
                             Text(clef.stringValue()).tag(clef)
                         }
                     }
+                    .accessibilityElements(label: "Clef.", hint: "Choose the clef on which the note will be displayed.", childBehavior: .ignore, value: "clef \(clef.stringValue()) is selected."){action in
+                        var index = clefsBasedOnRegister.firstIndex(of: clef)!
+                        switch action {
+                        case .increment:
+                            if index < clefsBasedOnRegister.count - 1{
+                                index += 1
+                                clef = clefsBasedOnRegister[index]
+                            }
+                        case .decrement:
+                            if index > 0{
+                                index -= 1
+                                clef = clefsBasedOnRegister[index]
+                            }
+                        @unknown default:
+                            fatalError("Accesibility adjustable action currently not handled")
+                        }
+                    }
+                    
+                    
                     Toggle("Add all notes in register \(register)", isOn: $addAllNotesInRegister.animation(.default))
+                        .accessibilityElements(label: "Add all notes in register \(register).", hint: "Quickly add all notes in the selected register and displayed in the selected clef.", childBehavior: .ignore, value: "Currently \(addAllNotesInRegister ? "selected." : "Not selected.")"){action in
+                            switch action {
+                            case .increment:
+                                if !addAllNotesInRegister{
+                                    addAllNotesInRegister = true
+                                }
+                            case .decrement:
+                                if addAllNotesInRegister{
+                                    addAllNotesInRegister = false
+                                }
+                            @unknown default:
+                                fatalError("Accesibility adjustable action currently not handled")
+                            }
+                        }
                 }header: {
                     Text("Register and clef")
                 }
                 .disabled(addTheSameNotesFromAllAvailableRegisters)
+                
+                
                 if !addAllNotesInRegister{
                     Section{
+                        
+                        
                         Picker("Choose a note", selection: $noteName){
                             ForEach(notesInRegister){noteName in
                                 Text(noteName.rawValue)
                             }
                         }
+                        .accessibilityElements(label: "Note.", hint: "Select a note from the selected register to be added and displayed in the selected clef", childBehavior: .ignore, value: "\(noteName.rawValue) is selected"){action in
+                            var index = notesInRegister.firstIndex(of: noteName)!
+                            switch action {
+                            case .increment:
+                                if index < notesInRegister.count - 1{
+                                    noteName = notesInRegister[index]
+                                }
+                            case .decrement:
+                                if index > 0{
+                                    noteName = notesInRegister[index]
+                                }
+                            @unknown default:
+                                fatalError("Accesibility adjustable action currently not handled")
+                            }
+                        }
+                        
+                        
                         Toggle("Add the note \(noteName.rawValue) for all available registers in the selected clef", isOn: $addTheSameNotesFromAllAvailableRegisters.animation(.default))
+                            .accessibilityElements(label: "Add all notes in the register.", hint: "Quickly add the selected notes for all available registers in the selected clef.", childBehavior: .ignore, value: "Currently \(addTheSameNotesFromAllAvailableRegisters ? "selected." : "not selected.")"){action in
+                                switch action {
+                                case .increment:
+                                    if !addTheSameNotesFromAllAvailableRegisters{
+                                        addTheSameNotesFromAllAvailableRegisters = true
+                                    }
+                                case .decrement:
+                                    if addTheSameNotesFromAllAvailableRegisters{
+                                        addTheSameNotesFromAllAvailableRegisters = false
+                                    }
+                                @unknown default:
+                                    fatalError("Accesibility adjustable action currently not handled")
+                                }
+                            }
+                        
+                        
                     }header: {
                         Text("Note")
                     }
@@ -208,6 +339,7 @@ struct AddNewLevelView: View {
                     }label: {
                         Text(addNotesLabel)
                     }
+                    .accessibilityHint("\(addNotesLabel) to the custom level you're creating")
                 }
                 
                 
@@ -252,6 +384,8 @@ struct AddNewLevelView: View {
         }
     }
 }
+
+
 extension AddNewLevelView{
     func saveNewLevel(){
         data.addLevel(withNumberOfQuestions: numberOfQuestions, timer: timer, notes: notes)
@@ -324,6 +458,8 @@ extension AddNewLevelView{
         isEditingEnabled = false
     }
 }
+
+
 
 struct AddNewLevelView_Previews: PreviewProvider {
     static var previews: some View {

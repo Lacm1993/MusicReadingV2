@@ -9,9 +9,12 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var data: AppProgress
+    
     @Environment(\.dismiss) var dismiss
+    
     @Binding var inputMethod: InputMethod
     @Binding var theme: Theme
+    
     var body: some View {
         NavigationStack{
             Form{
