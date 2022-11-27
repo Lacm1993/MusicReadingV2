@@ -83,7 +83,7 @@ struct LevelView: View {
                     }
                     switch inputMethod {
                     case .Buttons:
-                        ButtonInputSubView(maxNumber: level.uniqueNoteNames.count, funcToRun: judge, level: level, pauseGame: pauseGame, buttonSize: buttonSize, font: buttonFont, theme: theme)
+                        ButtonInputSubView(funcToRun: judge, level: level, pauseGame: pauseGame, buttonSize: buttonSize, font: buttonFont, theme: theme)
                     case .MIDI:
                         if let event = midiManager.midiEventNoteNumber{
                             Text("Note number: \(event)")

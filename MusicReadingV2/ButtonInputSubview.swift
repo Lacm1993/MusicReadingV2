@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ButtonInputSubView: View {
-    let maxNumber: Int
     let funcToRun: (Int)-> Void
     let level: Level
     let pauseGame: Bool
@@ -16,10 +15,10 @@ struct ButtonInputSubView: View {
     let font: CGFloat
     let theme: Theme
     var body: some View {
-        if maxNumber <= 4{
+        if level.noteCount <= 4{
             VStack(alignment: .center){
                 HStack{
-                    ForEach(0..<maxNumber, id: \.self){number in
+                    ForEach(0..<level.noteCount, id: \.self){number in
                         Button{
                             funcToRun(number)
                         }label: {
@@ -45,7 +44,7 @@ struct ButtonInputSubView: View {
                     }
                 }
                 HStack{
-                    ForEach(4..<maxNumber, id: \.self){number in
+                    ForEach(4..<level.noteCount, id: \.self){number in
                         Button{
                             funcToRun(number)
                         }label: {
@@ -64,7 +63,7 @@ struct ButtonInputSubView: View {
 struct ButtonInputSubView_Previews: PreviewProvider {
     static var funcToPreview = {(int: Int) -> Void in }
     static var previews: some View {
-        ButtonInputSubView(maxNumber: 10, funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, buttonSize: CGSize.zero, font: 5, theme: .Dark)
+        ButtonInputSubView(funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, buttonSize: CGSize.zero, font: 5, theme: .Dark)
     }
 }
 

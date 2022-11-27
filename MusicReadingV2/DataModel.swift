@@ -211,6 +211,7 @@ struct Note: Identifiable, Equatable, Comparable, Hashable, Codable{
     func chartLabel()-> String{
         "\(self.name.rawValue) \(self.register)"
     }
+    
 }
 extension Note : CustomStringConvertible{
     var description: String{
@@ -248,6 +249,7 @@ struct Level: Identifiable, Codable, Hashable{
         }
         return array
     }
+    
     var noteCount: Int{
         notes.count
     }

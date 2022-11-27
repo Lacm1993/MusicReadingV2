@@ -103,7 +103,7 @@ struct ContentView: View {
                                 LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
                             }
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding(.vertical)
                     }
                     .theme(preferedScheme: theme)

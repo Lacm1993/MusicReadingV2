@@ -288,7 +288,7 @@ struct AddNewLevelView: View {
                             }
                         }
                         .accessibilityElements(label: "Note.", hint: "Select a note from the selected register to be added and displayed in the selected clef", childBehavior: .ignore, value: "\(noteName.rawValue) is selected"){action in
-                            var index = notesInRegister.firstIndex(of: noteName)!
+                            let index = notesInRegister.firstIndex(of: noteName)!
                             switch action {
                             case .increment:
                                 if index < notesInRegister.count - 1{
