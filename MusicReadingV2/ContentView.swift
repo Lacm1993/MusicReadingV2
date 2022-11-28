@@ -16,19 +16,15 @@ struct ContentView: View {
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
     
     @State private var levelToEdit : Int?
+    @State private var levelToDelete = -1
     @State private var isShowingNewLevelSheet = false
     @State private var isShowingSheet = false
-    @State private var isAlertShowing = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    @State private var levelToDelete = -1
-    
+    @State private var isShowingAlert = false
+    @State private var isRemainderToSaveNeeded = false
     
     @AppStorage("InputMethod") var inputMethod : InputMethod = .Buttons
     @AppStorage("Theme") var theme: Theme = .Dark
-   
-    @FocusState var isKeypadFocused : Bool
-    
+
     var body: some View {
         NavigationStack(path: $navigationHistory.stack){
             GeometryReader{geo in
@@ -48,6 +44,7 @@ struct ContentView: View {
                                             navigationLinkLabel(level.id)
                                             .navigationLinkBackgroundLabel(preferedScheme: theme, width: navigationLinkLabelWidth)
                                         }
+                                        .needsToSaveChangesToEnable(check: isRemainderToSaveNeeded)
                                         Button{
                                             withAnimation{
                                                 if let levelToEdit, levelToEdit == level.id{
@@ -60,23 +57,20 @@ struct ContentView: View {
                                             Image(systemName: "gearshape.fill")
                                                 .font(.largeTitle)
                                         }
+                                        .needsToSaveChangesToEnable(check: isRemainderToSaveNeeded)
                                     }
                                     .textAndSystemImagesColor(preferedScheme: theme)
                                     if let levelToEdit, levelToEdit == level.id{
-                                        TextField(value: $level.numberOfQuestions, format: .number){
-                                            Text("Change number of questions")
-                                        }
-                                        .focused($isKeypadFocused)
-                                        TextField(value: $level.timer, format: .number){
-                                            Text("Change the time limit")
-                                        }
-                                        .focused($isKeypadFocused)
+                                        Stepper("Questions:\t\(level.numberOfQuestions)", value: $level.numberOfQuestions, in: 90...500, step: 1)
+                                        Stepper("Seconds:\t\(level.timer)", value: $level.timer, in: 30...500, step: 1)
                                         HStack(spacing: 100){
                                             Button{
                                                 saveEdits(for: level)
                                             }label: {
                                                 Text("Save")
                                             }
+                                            .scaleEffect(isRemainderToSaveNeeded ? 1.4 : 1)
+                                            .animation(.default.repeatForever(autoreverses: true), value: isRemainderToSaveNeeded)
                                             if level.isDeletable{
                                                 Button{
                                                     deleteLevel(level: level)
@@ -86,6 +80,7 @@ struct ContentView: View {
                                                 }
                                             }
                                         }
+                                        .buttonStyle(.bordered)
                                     }
                                 }
                                 .frame(width: vStackWidth)
@@ -97,7 +92,12 @@ struct ContentView: View {
                                 .disabled(!level.isEnabled)
                                 .disabledAppearance(check: !level.isEnabled)
                                 .id(level.id)
-                                
+                                .onChange(of: level.numberOfQuestions){_ in
+                                    isRemainderToSaveNeeded = true
+                                }
+                                .onChange(of: level.timer){_ in
+                                    isRemainderToSaveNeeded = true
+                                }
                             }
                             .navigationDestination(for: Level.self){level in
                                 LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
@@ -109,12 +109,10 @@ struct ContentView: View {
                     .theme(preferedScheme: theme)
                     .navigationTitle(Text("Music reading"))
                     .customToolbarApperance()
-                    .alert(alertTitle, isPresented: $isAlertShowing){
-                        Button(action: {}){
-                            Text("OK")
-                        }
+                    .alert("Done!", isPresented: $isShowingAlert){
+                        Button(action: {}){Text("OK")}
                     }message: {
-                        Text(alertMessage)
+                        Text("Changes saved!")
                     }
                     .sheet(isPresented: $isShowingSheet){
                         SettingsView(inputMethod: $inputMethod, theme: $theme)
@@ -132,16 +130,9 @@ struct ContentView: View {
                                 .textAndSystemImagesColor(preferedScheme: theme)
                         }
                         .padding()
+                        .needsToSaveChangesToEnable(check: isRemainderToSaveNeeded)
                     }
                     .toolbar{
-                        ToolbarItemGroup(placement: .keyboard){
-                            Spacer()
-                            Button{
-                                isKeypadFocused = false
-                            }label: {
-                                Text("Done")
-                            }
-                        }
                         ToolbarItem(placement: .navigationBarTrailing){
                             HStack{
                                 let func1 = {
@@ -174,6 +165,8 @@ struct ContentView: View {
                                     Image(systemName: "plus")
                                 }
                             }
+                            .disabled(isRemainderToSaveNeeded)
+                            .animation(.default, value: isRemainderToSaveNeeded)
                         }
                     }
                     .onChange(of: scenePhase){phase in
@@ -191,27 +184,15 @@ struct ContentView: View {
 
 
 extension ContentView{
+    //I could just call data.saveData every time the value changes, with an onChange but i think is kinda wasteful to call saveData everyTime
     func saveEdits(for level: Level){
-        guard level.numberOfQuestions >= 90 else{
-            alertTitle = "Too few questions"
-            alertMessage = "The minimum number of questions required is 90 for mandatory levels"
-            isAlertShowing = true
-            return
-        }
-        guard level.timer >= 30 else{
-            alertTitle = "Choose a higher time limit"
-            alertMessage = "Less than 30 seconds is not allowed in mandatory levels"
-            isAlertShowing = true
-                return
-        }
         data.saveData()
-        alertTitle = "Done!"
-        alertMessage = "Changes saved"
+        isRemainderToSaveNeeded = false
+        isShowingAlert = true
         //So it goes to the original property, not to the binding
         withAnimation{
             self.levelToEdit = nil
         }
-        isAlertShowing = true
     }
     func deleteLevel(level: Level){
         levelToEdit = level.id
