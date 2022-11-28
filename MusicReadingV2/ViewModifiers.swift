@@ -131,3 +131,11 @@ extension View{
             .modifier(AccessibilityElements(label: label, hint: hint, childBehavior: childBehavior, accessibilityValue: value, accessibilityFunc: accessibilityFunc))
     }
 }
+extension View{
+    func needsToSaveChangesToEnable(check bool: Bool)-> some View{
+        self
+            .disabled(bool)
+            .opacity(bool ? 0.60 : 1)
+            .animation(.default, value: bool)
+    }
+}

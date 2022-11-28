@@ -15,14 +15,14 @@ struct ButtonInputSubView: View {
     let font: CGFloat
     let theme: Theme
     var body: some View {
-        if level.noteCount <= 4{
+        if level.uniqueNoteCount <= 4{
             VStack(alignment: .center){
                 HStack{
-                    ForEach(0..<level.noteCount, id: \.self){number in
+                    ForEach(0..<level.uniqueNoteCount, id: \.self){number in
                         Button{
                             funcToRun(number)
                         }label: {
-                            Text(level.uniqueNoteNames[number].rawValue)
+                            Text(level.uniqueNoteNames[number])
                         }
                         .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
                         .disabled(pauseGame)
@@ -37,18 +37,18 @@ struct ButtonInputSubView: View {
                         Button{
                             funcToRun(number)
                         }label: {
-                            Text(level.uniqueNoteNames[number].rawValue)
+                            Text(level.uniqueNoteNames[number])
                         }
                         .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
                         .disabled(pauseGame)
                     }
                 }
                 HStack{
-                    ForEach(4..<level.noteCount, id: \.self){number in
+                    ForEach(4..<level.uniqueNoteCount, id: \.self){number in
                         Button{
                             funcToRun(number)
                         }label: {
-                            Text(level.uniqueNoteNames[number].rawValue)
+                            Text(level.uniqueNoteNames[number])
                         }
                         .buttonStyle(GameButton(width: buttonSize.width, height: buttonSize.height, theme: theme, pauseGame: pauseGame))
                         .disabled(pauseGame)

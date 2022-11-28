@@ -208,10 +208,9 @@ struct Note: Identifiable, Equatable, Comparable, Hashable, Codable{
     fileprivate(set) var accidental: NoteAccidental
     fileprivate(set) var clef: Clef
     fileprivate(set) var MIDINoteNumber : Int
-    func chartLabel()-> String{
-        "\(self.name.rawValue) \(self.register)"
+    func simpleLabel()-> String{
+        "\(self.name.rawValue)\(self.register)"
     }
-    
 }
 extension Note : CustomStringConvertible{
     var description: String{
@@ -240,16 +239,23 @@ struct Level: Identifiable, Codable, Hashable{
         }
         return maxScore >= Level.requiredScore
     }
-    var uniqueNoteNames: [NoteName]{
-        let set = self.notes.reduce(into: Set<NoteName>()){uniqueNames, note in
-            uniqueNames.insert(note.name)
+    var uniqueNoteNames: [String]{
+        let set = self.notes.reduce(into: Set<String>()){uniqueNames, note in
+            uniqueNames.insert(note.name.rawValue)
         }
-        let array = set.sorted{first, second in
-            first < second
+        guard set.count > 1 else{
+            var array = [String]()
+            self.notes.forEach{note in
+                array.append(note.simpleLabel())
+            }
+            return array.sorted(by: <)
         }
+        let array = set.noteOrderSorting()
         return array
     }
-    
+    var uniqueNoteCount: Int{
+        uniqueNoteNames.count
+    }
     var noteCount: Int{
         notes.count
     }
@@ -422,7 +428,7 @@ class AppProgress: ObservableObject{
         return .True
     }
 
-    func addLevel(withNumberOfQuestions numberOfQuestions: Int, timer: Int, notes: Set<Note>){
+    func addLevel(withNumberOfQuestions numberOfQuestions: Int, timer: Int, notes: Array<Note>){
         var percentagePerNote = [Note : Level.ScorePerNote]()
         for note in notes{
             percentagePerNote[note] = Level.ScorePerNote(right: 0, wrong: 0)
