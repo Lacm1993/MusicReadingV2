@@ -111,7 +111,7 @@ struct StatisticsView: View {
                                 Text(levelScoreLabel)
                                 Chart{
                                     ForEach(levelData.objects){object in
-                                        BarMark(x: .value("Name", object.note.chartLabel()),
+                                        BarMark(x: .value("Name", object.note.simpleLabel()),
                                                 y: .value("Count", object.count))
                                         .foregroundStyle(by: .value("Status", object.status.rawValue.uppercased()))
                                     }
@@ -124,7 +124,7 @@ struct StatisticsView: View {
                                 Text(globalScoreLabel)
                                 Chart{
                                     ForEach(historyData.objects, id: \.self){object in
-                                        BarMark(x: .value("Name", object.note.chartLabel()),
+                                        BarMark(x: .value("Name", object.note.simpleLabel()),
                                                 y: .value("Count", object.count))
                                         .foregroundStyle(by: .value("Status", object.status.rawValue.uppercased()))
                                     }

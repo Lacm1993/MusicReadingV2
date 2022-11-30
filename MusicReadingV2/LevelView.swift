@@ -247,7 +247,7 @@ extension LevelView{
             return
         }
         let submittedNote = level.uniqueNoteNames[answer]
-        let decision = correctNote.name == submittedNote
+        let decision = correctNote.name.rawValue == submittedNote || correctNote.simpleLabel() == submittedNote
         switch decision{
         case true:
             performActions(withCorrectNote: correctNote, status: .Right)

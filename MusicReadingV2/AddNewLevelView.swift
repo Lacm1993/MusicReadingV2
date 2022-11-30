@@ -388,7 +388,8 @@ struct AddNewLevelView: View {
 
 extension AddNewLevelView{
     func saveNewLevel(){
-        data.addLevel(withNumberOfQuestions: numberOfQuestions, timer: timer, notes: notes)
+        let noteArray = notes.sorted()
+        data.addLevel(withNumberOfQuestions: numberOfQuestions, timer: timer, notes: noteArray)
     }
     func resetNoteInputData(){
         addAllNotesInRegister = false
