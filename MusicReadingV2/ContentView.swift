@@ -16,7 +16,6 @@ struct ContentView: View {
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
     
     @State private var levelToEdit : Int?
-    @State private var levelToDelete = -1
     @State private var isShowingNewLevelSheet = false
     @State private var isShowingSheet = false
     @State private var isShowingAlert = false
@@ -74,8 +73,7 @@ struct ContentView: View {
                                             if level.isDeletable{
                                                 Button{
                                                     withAnimation{
-                                                        levelToDelete = level.id
-                                                        data.delete(level: level)
+                                                        deleteLevelAndResetState(level: level)
                                                     }
                                                 }label: {
                                                     Image(systemName: "trash.fill")
@@ -101,8 +99,7 @@ struct ContentView: View {
                                 .onChange(of: level.timer){_ in
                                     isRemainderToSaveNeeded = true
                                 }
-                                .opacity(levelToDelete == level.id ? 0 : 1)
-                                .offset(x: levelToDelete == level.id ? -400 : 0)
+                                .transition(AnyTransition.asymmetric(insertion: .opacity, removal: .slide).combined(with: .opacity))
                             }
                             .navigationDestination(for: Level.self){level in
                                 LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
@@ -205,6 +202,10 @@ extension ContentView{
     func deleteLevel(level: Level){
         levelToEdit = level.id
         data.delete(level: level)
+    }
+    func deleteLevelAndResetState(level: Level){
+        data.delete(level: level)
+        levelToEdit = nil
     }
 }
 
