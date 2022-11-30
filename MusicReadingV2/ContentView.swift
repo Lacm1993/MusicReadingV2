@@ -60,8 +60,8 @@ struct ContentView: View {
                                     }
                                     .textAndSystemImagesColor(preferedScheme: theme)
                                     if let levelToEdit, levelToEdit == level.id{
-                                        Stepper("Questions:\t\(level.numberOfQuestions)", value: $level.numberOfQuestions, in: 90...500, step: 1)
-                                        Stepper("Seconds:\t\(level.timer)", value: $level.timer, in: 30...500, step: 1)
+                                        Stepper("\(level.numberOfQuestions) questions", value: $level.numberOfQuestions, in: 90...500, step: 1)
+                                        Stepper("\(level.timer) seconds", value: $level.timer, in: 30...500, step: 1)
                                         HStack(spacing: 100){
                                             Button{
                                                 saveEdits(for: level)
