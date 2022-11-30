@@ -15,7 +15,7 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
     
-    @State private var levelToEdit : Int?
+    @State private var levelToEdit : UUID?
     @State private var isShowingNewLevelSheet = false
     @State private var isShowingSheet = false
     @State private var isShowingAlert = false
@@ -137,30 +137,32 @@ struct ContentView: View {
                     .toolbar{
                         ToolbarItem(placement: .navigationBarTrailing){
                             HStack{
-                                let func1 = {
-                                    withAnimation{
-                                        scrollManager.scrollTo(data.firstMandatoryLevelID, anchor: UnitPoint(x: space.midX, y: space .minY))
+                                if let firstCustomLevel = data.firstCustomLevelID{
+                                    let func1 = {
+                                        withAnimation{
+                                            scrollManager.scrollTo(data.firstMandatoryLevelID, anchor: UnitPoint(x: space.midX, y: space .minY))
+                                        }
                                     }
+                                    let func2 = {
+                                        withAnimation{
+                                            scrollManager.scrollTo(firstCustomLevel, anchor: .top)
+                                        }
+                                    }
+                                    if horizontalSizeClass == .regular{
+                                        ScrollReaderRegularView{
+                                            func1()
+                                        }funcToRun2: {
+                                            func2()
+                                        }
+                                    }else{
+                                        ScrollreaderCompactView{
+                                            func1()
+                                        }funcToRun2: {
+                                            func2()
+                                        }
+                                    }
+                                    Divider()
                                 }
-                                let func2 = {
-                                    withAnimation{
-                                        scrollManager.scrollTo(data.firstCustomLevelID, anchor: .top)
-                                    }
-                                }
-                                if horizontalSizeClass == .regular{
-                                    ScrollReaderRegularView{
-                                        func1()
-                                    }funcToRun2: {
-                                        func2()
-                                    }
-                                }else{
-                                    ScrollreaderCompactView{
-                                        func1()
-                                    }funcToRun2: {
-                                        func2()
-                                    }
-                                }
-                                Divider()
                                 Button{
                                     isShowingNewLevelSheet = true
                                 }label:{
@@ -169,9 +171,6 @@ struct ContentView: View {
                             }
                             .disabled(isRemainderToSaveNeeded)
                             .animation(.default, value: isRemainderToSaveNeeded)
-                        }
-                        ToolbarItem(placement: .navigationBarLeading){
-                            Text("\(data.levels.count)")
                         }
                     }
                     .onChange(of: scenePhase){phase in
@@ -211,16 +210,17 @@ extension ContentView{
 
 
 extension ContentView{
-    func navigationLinkLabel(_ id: Int)-> some View{
+    func navigationLinkLabel(_ id: UUID)-> some View{
+        let index = data.indexOfLevel(withID: id) + 1
         if horizontalSizeClass == .compact && dynamicTypeSize >= .xxLarge{
             return HStack(spacing: 20){
-                Text("L\(id)")
+                Text("L\(index)")
                 Image(systemName: "play.fill")
                     .font(.largeTitle)
             }
         }else{
             return HStack(spacing: 20){
-                Text("Level \(id)")
+                Text("Level \(index)")
                 Image(systemName: "play.fill")
                     .font(.largeTitle)
             }

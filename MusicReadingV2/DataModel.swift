@@ -226,7 +226,7 @@ struct Level: Identifiable, Codable, Hashable{
     var numberOfQuestions: Int
     var timer: Int
     fileprivate(set) var notes: [Note]
-    fileprivate(set) var id: Int
+    fileprivate(set) var id = UUID()
     @MaxScoreControl fileprivate(set) var maxScore: Int
     fileprivate(set) var numberOrTries: Int
     fileprivate(set) var percentagePerNote : [Note : ScorePerNote]
@@ -285,7 +285,7 @@ struct Level: Identifiable, Codable, Hashable{
             return self.percentagePerNote[note]?.wrong ?? 0
         }
     }
-    init(numberOfQuestions: Int = 100, timer: Int = 120, numberOrTries: Int = 0, maxScore: Int = 0, freeLevel: Bool = false, isEnabled: Bool = false, isDeletable: Bool = false, id: Int, notes: [Note]) {
+    init(numberOfQuestions: Int = 100, timer: Int = 120, numberOrTries: Int = 0, maxScore: Int = 0, freeLevel: Bool = false, isEnabled: Bool = false, isDeletable: Bool = false, notes: [Note]) {
         self.numberOfQuestions = numberOfQuestions
         self.timer = timer
         self.numberOrTries = numberOrTries
@@ -293,7 +293,6 @@ struct Level: Identifiable, Codable, Hashable{
         self.freeLevel = freeLevel
         self.isEnabled = isEnabled
         self.isDeletable = isDeletable
-        self.id = id
         self.notes = notes
         self.percentagePerNote = notes.reduce(into: [:]){dict, note in
             dict[note] = ScorePerNote(right: 0, wrong: 0)
@@ -304,7 +303,7 @@ struct Level: Identifiable, Codable, Hashable{
         self.numberOfQuestions = 0
         self.timer = 0
         self.notes = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60)]
-        self.id = -1
+        self.id = UUID()
         self.maxScore = 0
         self.numberOrTries = 0
         self.freeLevel = false
@@ -378,37 +377,41 @@ struct TutorialCard{
 class AppProgress: ObservableObject{
     static let completedLevelsKey = "CompletedLevels"
     static let enabledLevelsKey = "EnabledLevels"
+    
     @Published var levels: [Level]
+    
     @AppStorage(AppProgress.completedLevelsKey) var completedLevels = 0
     @AppStorage(AppProgress.enabledLevelsKey) var enabledLevels = 1
+    
     var count: Int{
         levels.count
     }
-    var firstMandatoryLevelID: Int{
-        0
+    var firstMandatoryLevelID: UUID{
+        self.levels[0].id
     }
-    var firstCustomLevelID: Int{
-        self.levels.first(where: {level in level.freeLevel})?.id ?? 0
+    //If there are no free levels it returns a random UUID which might mess up with the scroll view reader, i dont know
+    var firstCustomLevelID: UUID?{
+        self.levels.first(where: {level in level.freeLevel})?.id
     }
-    func level(withID id: Int)-> Level{
-        return levels.first{level in level.id == id} ?? Level()
+    
+    
+    func level(withID id: UUID)-> Level{
+        return levels.first{level in level.id == id } ?? Level()
     }
-    func saveData(){
-        if let data = try? JSONEncoder().encode(levels){
-            let url = FileManager.default.getDocumentDirectory().appendingPathComponent("Levels.json")
-            do{
-                try data.write(to: url)
-            }catch{
-                print("Failed to write to the documents directory")
-            }
-        }
+    func indexOfLevel(withID id: UUID)-> Int{
+        levels.firstIndex{level in level.id == id} ?? -1
     }
+    
+    
     func updateLevelInfo(with newInfo: Level){
         if let index = levels.firstIndex(where: {level in level.id == newInfo.id}){
             levels[index] = newInfo
         }
     }
-    func unlockNextLevel(fromLevelAtIndex index: Int)-> NextLevelUnlocked{
+    func unlockNextLevel(fromLevelWithID id: UUID)-> NextLevelUnlocked{
+        guard let index = levels.firstIndex(where: {level in level.id == id}) else{
+            return .NotApplicable
+        }
         guard levels[index].isCompleted else{
             return .False
         }
@@ -427,15 +430,13 @@ class AppProgress: ObservableObject{
         levels[index + 1].isEnabled = true
         return .True
     }
-
     func addLevel(withNumberOfQuestions numberOfQuestions: Int, timer: Int, notes: Array<Note>){
         var percentagePerNote = [Note : Level.ScorePerNote]()
         for note in notes{
             percentagePerNote[note] = Level.ScorePerNote(right: 0, wrong: 0)
         }
-        let id = self.count
         let notesArray = notes.sorted()
-        let level = Level(numberOfQuestions: numberOfQuestions, timer: timer, numberOrTries: 0, maxScore: 0, freeLevel: true, isEnabled: true, isDeletable: true, id: id, notes: notesArray)
+        let level = Level(numberOfQuestions: numberOfQuestions, timer: timer, numberOrTries: 0, maxScore: 0, freeLevel: true, isEnabled: true, isDeletable: true, notes: notesArray)
         self.levels.append(level)
         self.saveData()
     }
@@ -445,9 +446,6 @@ class AppProgress: ObservableObject{
         }
         let levelIndex = levels.firstIndex(of: level)!
         levels.remove(at: levelIndex)
-        for i in 0..<count where levels[i].id >= levelIndex{
-            levels[i].id -= 1
-        }
         self.saveData()
     }
     func note(with name: NoteName, register: Int,and clef: Clef, getMIDINumberFrom midiInfo: MIDIInfo)-> Note{
@@ -461,13 +459,23 @@ class AppProgress: ObservableObject{
         }
         return Note(name: name, register: register, duration: .quarterNote, accidental: .None, clef: clef, MIDINoteNumber: midiNoteNumber)
     }
+    func saveData(){
+        if let data = try? JSONEncoder().encode(levels){
+            let url = FileManager.default.getDocumentDirectory().appendingPathComponent("Levels.json")
+            do{
+                try data.write(to: url)
+            }catch{
+                print("Failed to write to the documents directory")
+            }
+        }
+    }
     //Only for development, resets the game to the initial state
     func resetAll(){
-        levels = [Level(isEnabled: true, id: 0,
+        levels = [Level(isEnabled: true,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
                         ]),
-                  Level(id: 1,
+                  Level(
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
                                 Note(name: .C, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 72),
@@ -492,11 +500,11 @@ class AppProgress: ObservableObject{
             levels = object
             return
         }
-        levels = [Level(isEnabled: true, id: 0,
+        levels = [Level(isEnabled: true,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
                         ]),
-                  Level(id: 1,
+                  Level(
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
                                 Note(name: .C, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 72),
@@ -566,3 +574,5 @@ struct MIDIInfo{
         list = []
     }
 }
+
+
