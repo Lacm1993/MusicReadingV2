@@ -25,9 +25,6 @@ struct ContentView: View {
     @AppStorage("InputMethod") var inputMethod : InputMethod = .Buttons
     @AppStorage("Theme") var theme: Theme = .Dark
 
-    @State private var isDeleted = false
-    
-    
     var body: some View {
         NavigationStack(path: $navigationHistory.stack){
             GeometryReader{geo in
