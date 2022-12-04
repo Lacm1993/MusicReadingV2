@@ -105,10 +105,9 @@ struct ContentView: View {
                                 LevelView(id: level.id, inputMethod: inputMethod, theme: theme)
                             }
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding(.vertical)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .theme(preferedScheme: theme)
                     .navigationTitle(Text("Music reading"))
                     .customToolbarApperance()
                     .alert("Done!", isPresented: $isShowingAlert){
@@ -180,6 +179,7 @@ struct ContentView: View {
                     }
                 }
             }
+            .theme(preferedScheme: theme)
         }
         .preferredColorScheme(theme == .Dark ? .dark : .light)
         .environmentObject(data)
