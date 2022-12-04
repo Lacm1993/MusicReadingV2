@@ -25,23 +25,17 @@ struct ContentView: View {
     @AppStorage("Theme") var theme: Theme = .Dark
 
     var body: some View {
-        NavigationStack(path: $navigationHistory.stack){
-            GeometryReader{geo in
-                
-                let space = geo.frame(in: .global)
-                let vStackWidth = geo.size.width * 0.85
-                let hStackWidth = space.width * 0.45
-                let navigationLinkLabelWidth = space.width * 0.30
-                
+        GeometryReader{geo in
+            NavigationStack(path: $navigationHistory.stack){
                 ScrollViewReader{scrollManager in
                     ScrollView(.vertical, showsIndicators: false){
                         VStack(spacing: 10){
                             ForEach($data.levels){$level in
                                 VStack{
-                                    HStack(spacing: hStackWidth){
+                                    HStack(spacing: geo.size.width * 0.45){
                                         NavigationLink(value: level){
                                             navigationLinkLabel(level.id)
-                                            .navigationLinkBackgroundLabel(preferedScheme: theme, width: navigationLinkLabelWidth)
+                                                .navigationLinkBackgroundLabel(preferedScheme: theme, width: geo.size.width * 0.30)
                                         }
                                         .needsToSaveChangesToEnable(check: isRemainderToSaveNeeded)
                                         Button{
@@ -84,7 +78,7 @@ struct ContentView: View {
                                         .buttonStyle(.bordered)
                                     }
                                 }
-                                .frame(width: vStackWidth)
+                                .frame(width: geo.size.width * 0.85)
                                 .padding()
                                 .background(.ultraThinMaterial)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -139,7 +133,7 @@ struct ContentView: View {
                                 if let firstCustomLevel = data.firstCustomLevelID{
                                     let func1 = {
                                         withAnimation{
-                                            scrollManager.scrollTo(data.firstMandatoryLevelID, anchor: UnitPoint(x: space.midX, y: space .minY))
+                                            scrollManager.scrollTo(data.firstMandatoryLevelID, anchor: .top)
                                         }
                                     }
                                     let func2 = {
@@ -178,11 +172,11 @@ struct ContentView: View {
                         }
                     }
                 }
+                .theme(preferedScheme: theme)
             }
-            .theme(preferedScheme: theme)
+            .preferredColorScheme(theme == .Dark ? .dark : .light)
+            .environmentObject(data)
         }
-        .preferredColorScheme(theme == .Dark ? .dark : .light)
-        .environmentObject(data)
     }
 }
 
