@@ -9,7 +9,7 @@ import SwiftUI
 import CoreHaptics
 
 struct LevelView: View {
-    let id: Int
+    let id: UUID
     let inputMethod: InputMethod
     let timerAnimation = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
     let timerGamePlay = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -112,7 +112,7 @@ struct LevelView: View {
                 .frame(maxWidth: .infinity)
                 .textAndSystemImagesColor(preferedScheme: theme)
             }
-            .navigationTitle(Text("Level \(id)"))
+            .navigationTitle(Text("Level \(data.indexOfLevel(withID: id) + 1)"))
             .navigationBarTitleDisplayMode(.inline)
             .theme(preferedScheme: theme)
             .customToolbarApperance()
@@ -215,7 +215,7 @@ extension LevelView{
     func saveToDataModel(){
         level.updateMaxScoreAndNumberOfTries(with: rightAnswers)
         data.updateLevelInfo(with: level)
-        isNextLevelUnlocked = data.unlockNextLevel(fromLevelAtIndex: level.id)
+        isNextLevelUnlocked = data.unlockNextLevel(fromLevelWithID: level.id)
         data.saveData()
     }
 }
@@ -333,7 +333,7 @@ extension LevelView{
 
 struct LevelView_Previews: PreviewProvider {
     static var previews: some View {
-        LevelView(id: 0, inputMethod: .Buttons, theme: .Dark)
+        LevelView(id: UUID(), inputMethod: .Buttons, theme: .Dark)
     }
 }
 

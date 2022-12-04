@@ -63,7 +63,7 @@ struct ButtonInputSubView: View {
 struct ButtonInputSubView_Previews: PreviewProvider {
     static var funcToPreview = {(int: Int) -> Void in }
     static var previews: some View {
-        ButtonInputSubView(funcToRun: funcToPreview, level: Level(id: -1, notes: []), pauseGame: true, buttonSize: CGSize.zero, font: 5, theme: .Dark)
+        ButtonInputSubView(funcToRun: funcToPreview, level: Level( notes: []), pauseGame: true, buttonSize: CGSize.zero, font: 5, theme: .Dark)
     }
 }
 

@@ -164,7 +164,7 @@ struct StatisticsView: View {
 }
 struct StatisticsView_Previews: PreviewProvider {
     static var previews: some View {
-        StatisticsView(level: Level(id: -1, notes: []), score: [:], theme: .Dark, isNextLevelUnlocked: .False)
+        StatisticsView(level: Level(notes: []), score: [:], theme: .Dark, isNextLevelUnlocked: .False)
     }
 }
 
