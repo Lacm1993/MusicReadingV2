@@ -11,7 +11,7 @@ import SwiftUI
 struct MusicReadingV2App: App {
     @StateObject var midiManager = MIDIModule()
      var body: some Scene {
-         WindowGroup {
+        WindowGroup {
              ContentView()
                  .environmentObject(midiManager)
          }

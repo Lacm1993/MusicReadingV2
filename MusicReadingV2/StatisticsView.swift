@@ -91,14 +91,10 @@ struct StatisticsView: View {
     }
     
     var body: some View {
-        NavigationStack{
-            GeometryReader{geo in
-                
-                let outerVStackSpacing = geo.size.height * 0.05
-                let chartFrame = CGSize(width: geo.size.width * 0.50, height: geo.size.width * 0.50)
-                
+        GeometryReader{geo in
+            NavigationStack{
                 ScrollView(.vertical){
-                    VStack(spacing: outerVStackSpacing){
+                    VStack(spacing: geo.size.height * 0.05){
                         VStack(spacing: 10){
                             Text(maxScoreInfo)
                             Text(levelCompleteInfo)
@@ -117,7 +113,7 @@ struct StatisticsView: View {
                                     }
                                 }
                                 .chartForegroundStyleScale(["RIGHT": Color.green, "WRONG": Color.red])
-                                .frame(width: chartFrame.width, height: chartFrame.height)
+                                .frame(width: geo.size.width * 0.90 ,height: geo.size.height * 0.50)
                             }
                             Divider()
                             VStack{
@@ -130,7 +126,7 @@ struct StatisticsView: View {
                                     }
                                 }
                                 .chartForegroundStyleScale(["RIGHT": Color.green, "WRONG": Color.red])
-                                .frame(width: chartFrame.width, height: chartFrame.height)
+                                .frame(width: geo.size.width * 0.90 ,height: geo.size.height * 0.50)
                             }
                             Button("Go back to the game"){
                                 dismiss()
@@ -141,6 +137,7 @@ struct StatisticsView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .navigationTitle("Statistics")
+                .navigationBarTitleDisplayMode(.inline)
                 .theme(preferedScheme: theme)
                 .textAndSystemImagesColor(preferedScheme: theme)
                 .customToolbarApperance()
