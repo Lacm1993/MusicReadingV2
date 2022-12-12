@@ -24,17 +24,34 @@ struct LevelView: View {
     
     @State private var level = Level()
     @State private var score = ScoreInstance()
+    
+    //If the level is a normal level
     @State private var solution = 0
     @State private var questionsRemaining = 0
-    @State private var isShowingSheet = false
-    @State private var isShowingAlert = false
+    @State private var sequencesRemaining = 0
+    
     @State private var answerAnimation : Image?
     @State private var answerAnimationColor : Color = .green
     @State private var answerAnimationOpacity = 1.0
+    
+    //If the level is a sequence
+    @State private var currentSequence = [Note]()
+    @State private var currentAnswers = [Int]()
+    @State private var currentAnswersStatus = [Bool]()
+
+    //For both types of level
+    @State private var isShowingSheet = false
+    @State private var isShowingAlert = false
+    
     @State private var timeRemaining = 0
-    @State private var timeScaleEffect = 0.25
+    @State private var timerScaleEffect = 0.25
+    
     @State private var pauseGame = false
+    
+    //For mandatory levels
     @State private var isNextLevelUnlocked : NextLevelUnlocked = .False
+    
+    //For devices with Haptic engines
     @State private var haptics : CHHapticEngine?
 
     
@@ -58,55 +75,29 @@ struct LevelView: View {
     var body: some View {
         GeometryReader{geo in
             
-            let vStackSpacing = geo.size.height * 0.08
+            let spacing = geo.size.height * 0.08
             let imageFrame = CGSize(width: geo.size.width * 0.10, height: geo.size.height * 0.10)
-            let waitForInputFrameWidth = geo.size.width * 0.85
-            let buttonSize = CGSize(width: geo.size.width * 0.18, height: geo.size.height * 0.10)
-            let buttonFont = geo.size.height > geo.size.width ? geo.size.height * 0.03 : geo.size.height * 0.045
+            let inputMessageWidth = geo.size.width * 0.85
+            let buttonDimensions = CGSize(width: geo.size.width * 0.18, height: geo.size.height * 0.10)
+            let fontSize = geo.size.height > geo.size.width ? geo.size.height * 0.03 : geo.size.height * 0.045
             
             ScrollView(.vertical){
-                VStack(spacing: vStackSpacing){
+                VStack(spacing: spacing){
+                    //Timer
                     Text("Time: \(timeRemaining)")
                         .font(.system(size: 80))
-                        .scaleEffect(timeScaleEffect)
-                    if questionsRemaining > 0{
-                        if let validAnswerAnimation = answerAnimation{
-                            validAnswerAnimation
-                                .statusImage(width: imageFrame.width, height: imageFrame.height, color: answerAnimationColor, opacity: answerAnimationOpacity)
-                        }else{
-                            Text(waitingForInputMessage)
-                                .multilineTextAlignment(.center)
-                                .frame(width: waitForInputFrameWidth, height: imageFrame.height)
-                        }
-                        Text(level.note(at: solution)?.id ?? "")
-                            .padding()
-                    }
-                    switch inputMethod {
-                    case .Buttons:
-                        ButtonInputSubView(funcToRun: judge, level: level, pauseGame: pauseGame, buttonSize: buttonSize, font: buttonFont, theme: theme)
-                    case .MIDI:
-                        if let event = midiManager.midiEventNoteNumber{
-                            Text("Note number: \(event)")
-                                .foregroundColor(.primary)
-                        }else{
-                            Text("Waiting For input...")
-                                .foregroundColor(.primary)
-                        }
-                    case .Audio:
-                        Text("Audio")
-                    }
+                        .scaleEffect(timerScaleEffect)
                     
-                    Text("Remaining questions: \(questionsRemaining)")
-
-                    HStack(spacing: 20){
-                        VStack(alignment: .center){
-                            Text("Right answers:")
-                            Text("\(rightAnswers)")
-                        }
-                        VStack(alignment: .center){
-                            Text("Wrong answers:")
-                            Text("\(wrongAnswers)")
-                        }
+                    VisualFeedbackView(imageFrame: imageFrame, textWidth: inputMessageWidth)
+                
+                    QuestionView()
+                    
+                    InputView(fontSize: fontSize, buttonDimensions: buttonDimensions)
+                    
+                    MainCounterView()
+                    
+                    if !level.isSequence{
+                        SecondaryCounterView()
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -144,43 +135,38 @@ struct LevelView: View {
                     }
                 }
             }
+            //For both types of level
             .onAppear{
-                level = data.level(withID: id)
-                solution = Int.random(in: 0..<level.notes.count)
-                questionsRemaining = level.numberOfQuestions
-                timeRemaining = level.timer
-                timeScaleEffect = 1.0
-                for i in level.notes{
-                    score.scorePerNote[i] = ScoreInstance.ScorePerNote()
-                }
-            }
-            .onChange(of: questionsRemaining){number in
-                if number == 0{
-                    saveToDataModel()
-                    isShowingSheet = true
-                }
+                onAppearActions()
             }
             .onChange(of: timeRemaining){time in
-                if time == 0{
-                    saveToDataModel()
-                    isShowingSheet = true
-                }
-                if time < 10{
-                    withAnimation{
-                        timeScaleEffect += 0.05
-                    }
-                }else{
-                    timeScaleEffect = 0.25
-                }
+                shouldEndGame(check: time)
+                shouldAnimateTimer(check: time)
             }
-            .onChange(of: solution){_ in
-                prepareHaptics()
+            .onReceive(timerGamePlay){_ in
+                guard scenePhase == .active else{ return }
+                guard !pauseGame else { return }
+                guard !isShowingSheet else { return }
+                if timeRemaining > 0{
+                    timeRemaining -= 1
+                }
             }
             .onChange(of: midiManager.midiEvent){_ in
                 guard let event = midiManager.midiEventNoteNumber else{
                     return
                 }
-                judgeAnswerInMIDI(forNoteNumber: event)
+                if !level.isSequence{
+                    judgeAnswerInMIDI(forNoteNumber: event, correctNote: level.note(at: solution))
+                }else{
+                    currentAnswers.append(event)
+                }
+            }
+            //For normal levels
+            .onChange(of: questionsRemaining){counter in
+                shouldEndGame(check: counter)
+            }
+            .onChange(of: solution){_ in
+                prepareHaptics()
             }
             .onReceive(timerAnimation){_ in
                 if answerAnimationOpacity > 0{
@@ -189,12 +175,13 @@ struct LevelView: View {
                     }
                 }
             }
-            .onReceive(timerGamePlay){_ in
-                guard scenePhase == .active else{ return }
-                guard !pauseGame else {return}
-                if timeRemaining > 0{
-                    timeRemaining -= 1
-                }
+            //For sequence mode
+            .onChange(of: currentAnswers){answers in
+                prepareHaptics()
+                shouldDispatchAnswers(check: answers)
+            }
+            .onChange(of: sequencesRemaining){counter in
+                shouldEndGame(check: counter)
             }
         }
     }
@@ -202,14 +189,173 @@ struct LevelView: View {
 
 
 extension LevelView{
-    func reset(){
+    
+    func InputView(fontSize: CGFloat, buttonDimensions: CGSize)-> some View{
+        @ViewBuilder var inputs: some View{
+            switch inputMethod{
+            case .Buttons:
+                ButtonInputView(funcToRun1: judge, funcToRun2: storeAnswer, buttonDimensions: buttonDimensions, fontSize: fontSize)
+            case .MIDI:
+                if let event = midiManager.midiEventNoteNumber{
+                    Text("Note number: \(event)")
+                        .foregroundColor(.primary)
+                }else{
+                    Text("Waiting For input...")
+                        .foregroundColor(.primary)
+                }
+            case .Audio:
+                Text("Audio")
+            }
+        }
+        return inputs
+    }
+    
+    func ButtonInputView(funcToRun1: @escaping (Int, Note?)-> Void, funcToRun2:  @escaping (Int)-> Void, buttonDimensions: CGSize, fontSize: CGFloat)-> some View{
+        @ViewBuilder var body: some View {
+            if level.uniqueNoteCount <= 4{
+                VStack(alignment: .center){
+                    HStack{
+                        ForEach(0..<level.uniqueNoteCount, id: \.self){number in
+                            Button{
+                                if !level.isSequence{
+                                    funcToRun1(number, level.note(at: solution))
+                                }else{
+                                    funcToRun2(number)
+                                    neutralHaptics()
+                                }
+                            }label: {
+                                Text(level.uniqueNoteNames[number])
+                            }
+                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
+                            .disabled(pauseGame)
+                        }
+                    }
+                }
+                .font(.system(size: fontSize))
+            }else{
+                VStack(alignment: .center){
+                    HStack{
+                        ForEach(0..<4, id: \.self){number in
+                            Button{
+                                if !level.isSequence{
+                                    funcToRun1(number, level.note(at: solution))
+                                }else{
+                                    funcToRun2(number)
+                                    neutralHaptics()
+                                }
+                            }label: {
+                                Text(level.uniqueNoteNames[number])
+                            }
+                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
+                            .disabled(pauseGame)
+                        }
+                    }
+                    HStack{
+                        ForEach(4..<level.uniqueNoteCount, id: \.self){number in
+                            Button{
+                                if !level.isSequence{
+                                    funcToRun1(number, level.note(at: solution))
+                                }else{
+                                    funcToRun2(number)
+                                    neutralHaptics()
+                                }
+                            }label: {
+                                Text(level.uniqueNoteNames[number])
+                            }
+                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
+                            .disabled(pauseGame)
+                        }
+                    }
+                }
+                .font(.system(size: fontSize))
+            }
+        }
+        return body
+    }
+    func QuestionView()-> some View{
+        @ViewBuilder var questions: some View{
+            if level.isSequence{
+                HStack(spacing: 10){
+                    ForEach(currentSequence){note in
+                        Text(note.simpleLabel())
+                    }
+                }
+            }else{
+                Text(level.note(at: solution)?.simpleLabel() ?? "")
+                    .padding()
+            }
+        }
+        return questions
+    }
+    func MainCounterView()-> some View{
+        if level.isSequence{
+            return Text("Remaining sequences: \(sequencesRemaining)")
+        }else{
+            return Text("Remaining questions \(questionsRemaining)")
+        }
+    }
+    func SecondaryCounterView()-> some View{
+        HStack(spacing: 20){
+            VStack(alignment: .center){
+                Text("Right answers:")
+                Text("\(rightAnswers)")
+            }
+            VStack(alignment: .center){
+                Text("Wrong answers:")
+                Text("\(wrongAnswers)")
+            }
+        }
+    }
+}
+
+
+extension LevelView{
+    func VisualFeedbackView(imageFrame: CGSize, textWidth: CGFloat)-> some View{
+        @ViewBuilder var animation: some View{
+            if !level.isSequence{
+                if let validAnswerAnimation = answerAnimation{
+                    validAnswerAnimation
+                        .statusImage(width: imageFrame.width, height: imageFrame.height, color: answerAnimationColor, opacity: answerAnimationOpacity)
+                }else{
+                    Text(waitingForInputMessage)
+                        .multilineTextAlignment(.center)
+                        .frame(width: textWidth, height: imageFrame.height)
+                }
+            }
+        }
+        return animation
+    }
+}
+
+
+extension LevelView{
+    func onAppearActions(){
         level = data.level(withID: id)
-        solution = Int.random(in: 0..<level.notes.count)
-        questionsRemaining = level.numberOfQuestions
+        if !level.isSequence{
+            solution = Int.random(in: 0..<level.notes.count)
+            questionsRemaining = level.numberOfQuestions
+        }else{
+            var array = [Note]()
+            while array.count < level.sequenceNoteCount{
+                let note = level.notes[Int.random(in: 0..<level.noteCount)]
+                if !array.contains(note){
+                    array.append(note)
+                }
+            }
+            currentSequence = array
+            sequencesRemaining = level.sequenceCount
+        }
         timeRemaining = level.timer
         score = ScoreInstance()
         for i in level.notes{
             score.scorePerNote[i] = ScoreInstance.ScorePerNote()
+        }
+    }
+    func reset(){
+        onAppearActions()
+        if level.isSequence{
+            currentAnswersStatus = []
+            currentAnswers = []
         }
     }
     func saveToDataModel(){
@@ -218,6 +364,36 @@ extension LevelView{
         isNextLevelUnlocked = data.unlockNextLevel(fromLevelWithID: level.id)
         data.saveData()
     }
+    func shouldEndGame(check counter: Int){
+        if counter == 0{
+            saveToDataModel()
+            isShowingSheet = true
+        }
+    }
+    func shouldDispatchAnswers(check answers: [Int]){
+        if answers.count == currentSequence.count{
+            dispatchAnswersAndCreateNextSequence()
+        }
+    }
+    func shouldAnimateTimer(check time: Int){
+        if !level.isSequence{
+            if time < 10{
+                withAnimation{
+                    timerScaleEffect += 0.05
+                }
+            }else{
+                timerScaleEffect = 0.25
+            }
+        }else{
+            if time < 4{
+                withAnimation{
+                    timerScaleEffect += 0.05
+                }
+            }else{
+                timerScaleEffect = 0.25
+            }
+        }
+    }
 }
 
 
@@ -225,38 +401,35 @@ extension LevelView{
     func performActions(withCorrectNote correctNote: Note, status: AnswerStatus){
         switch status {
         case .Right:
-            hapticRightAnswer()
+            if !level.isSequence{
+                hapticRightAnswer()
+                answerAnimation = Image(systemName: "checkmark.circle.fill")
+                answerAnimationColor = .green
+            }
             score.scorePerNote[correctNote]!.right += 1
             level.updateStatistics(for: correctNote, status: .Right)
-            answerAnimation = Image(systemName: "checkmark.circle.fill")
-            answerAnimationColor = .green
+            if level.isSequence{
+                currentAnswersStatus.append(true)
+            }
         case .Wrong:
-            hapticWrongAnswer()
+            if !level.isSequence{
+                hapticWrongAnswer()
+                answerAnimation = Image(systemName: "xmark.circle.fill")
+                answerAnimationColor = .red
+            }
             score.scorePerNote[correctNote]!.wrong += 1
             level.updateStatistics(for: correctNote, status: .Wrong)
-            answerAnimation = Image(systemName: "xmark.circle.fill")
-            answerAnimationColor = .red
+            if level.isSequence{
+                currentAnswersStatus.append(false)
+            }
         }
-        answerAnimationOpacity = 1
-        questionsRemaining -= 1
-        solution = Int.random(in: 0..<level.noteCount)
-    }
-    func judge(answer: Int){
-        let correctNote = level.note(at: solution)
-        guard let correctNote else{
-            return
-        }
-        let submittedNote = level.uniqueNoteNames[answer]
-        let decision = correctNote.name.rawValue == submittedNote || correctNote.simpleLabel() == submittedNote
-        switch decision{
-        case true:
-            performActions(withCorrectNote: correctNote, status: .Right)
-        case false:
-            performActions(withCorrectNote: correctNote, status: .Wrong)
+        if !level.isSequence{
+            answerAnimationOpacity = 1
+            questionsRemaining -= 1
+            solution = Int.random(in: 0..<level.noteCount)
         }
     }
-    func judgeAnswerInMIDI(forNoteNumber number: Int){
-        let correctNote = level.note(at: solution)
+    func judgeAnswerInMIDI(forNoteNumber number: Int, correctNote: Note?){
         guard let correctNote else{
             return
         }
@@ -274,6 +447,66 @@ extension LevelView{
         case false:
             performActions(withCorrectNote: correctNote, status: .Wrong)
         }
+    }
+    func judge(answer: Int, correctNote: Note?){
+        guard let correctNote else{
+            return
+        }
+        let submittedNote = level.uniqueNoteNames[answer]
+        let decision = correctNote.name.rawValue == submittedNote || correctNote.simpleLabel() == submittedNote
+        switch decision{
+        case true:
+            performActions(withCorrectNote: correctNote, status: .Right)
+        case false:
+            performActions(withCorrectNote: correctNote, status: .Wrong)
+        }
+    }
+}
+
+
+extension LevelView{
+    func storeAnswer(answer: Int){
+        currentAnswers.append(answer)
+    }
+    func dispatchAnswersAndCreateNextSequence(){
+        guard currentAnswers.count == currentSequence.count else{
+            return
+        }
+        sequencesRemaining -= 1
+        for (a, b) in zip(currentAnswers, currentSequence){
+            if inputMethod == .Buttons{
+                judge(answer: a, correctNote: b)
+            }else if inputMethod == .MIDI{
+                judgeAnswerInMIDI(forNoteNumber: a, correctNote: b)
+            }
+        }
+        let rightAnswers = currentAnswersStatus.reduce(0){ $1 == false ? $0 + 1 : $0}
+        if shouldEndGameBasedOnPerformance(check: rightAnswers){
+            return
+        }
+        createNextSequence()
+    }
+    func shouldEndGameBasedOnPerformance(check rightAnswers: Int)-> Bool{
+        let percentage = Double(rightAnswers) / Double(level.sequenceNoteCount)
+        if percentage >= 0.20{
+            saveToDataModel()
+            isShowingSheet = true
+            return true
+        }
+        return false
+    }
+    func createNextSequence(){
+        var array = [Note]()
+        while array.count < level.sequenceNoteCount{
+            let note = level.notes[Int.random(in: 0..<level.noteCount)]
+            if !array.contains(note){
+                array.append(note)
+            }
+        }
+        currentSequence = array
+        currentAnswers = []
+        timeRemaining = level.timer
+        currentAnswersStatus = []
     }
 }
 
@@ -300,6 +533,7 @@ extension LevelView{
         let parameter2 : CHHapticEventParameter = .init(parameterID: .hapticSharpness, value: 1)
         let event : CHHapticEvent = .init(eventType: .hapticTransient, parameters: [parameter1, parameter2], relativeTime: 0)
         events.append(event)
+        events.append(event)
         do{
             let pattern : CHHapticPattern = try .init(events: events, parameters: [])
             let player = try haptics?.makePlayer(with: pattern)
@@ -321,6 +555,23 @@ extension LevelView{
         let event2 : CHHapticEvent = .init(eventType: .hapticTransient, parameters: [parameter3, parameter4], relativeTime: 0.5)
         events.append(event1)
         events.append(event2)
+        do{
+            let pattern : CHHapticPattern = try .init(events: events, parameters: [])
+            let player = try haptics?.makePlayer(with: pattern)
+            try player?.start(atTime: 0.0)
+        }catch{
+            print("Something went wrong with the haptics")
+        }
+    }
+    func neutralHaptics(){
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else{
+            return
+        }
+        var events = [CHHapticEvent]()
+        let parameter1 : CHHapticEventParameter = .init(parameterID: .hapticIntensity, value: 1)
+        let parameter2 : CHHapticEventParameter = .init(parameterID: .hapticSharpness, value: 1)
+        let event : CHHapticEvent = .init(eventType: .hapticTransient, parameters: [parameter1, parameter2], relativeTime: 0.0)
+        events.append(event)
         do{
             let pattern : CHHapticPattern = try .init(events: events, parameters: [])
             let player = try haptics?.makePlayer(with: pattern)

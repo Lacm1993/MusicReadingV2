@@ -14,6 +14,7 @@ struct ButtonInputSubView: View {
     let buttonSize: CGSize
     let font: CGFloat
     let theme: Theme
+    
     var body: some View {
         if level.uniqueNoteCount <= 4{
             VStack(alignment: .center){
