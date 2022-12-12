@@ -209,48 +209,24 @@ extension LevelView{
         }
         return inputs
     }
-    
     func ButtonInputView(funcToRun1: @escaping (Int, Note?)-> Void, funcToRun2:  @escaping (Int)-> Void, buttonDimensions: CGSize, fontSize: CGFloat)-> some View{
-        @ViewBuilder var body: some View {
-            VStack(alignment: .center){
-                HStack{
-                    ForEach(0..<min(4, level.uniqueNoteCount), id: \.self){number in
-                        Button{
-                            if !level.isSequence{
-                                funcToRun1(number, level.note(at: solution))
-                            }else{
-                                funcToRun2(number)
-                                neutralHaptics()
-                            }
-                        }label: {
-                            Text(level.uniqueNoteNames[number])
-                        }
-                        .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
-                        .disabled(pauseGame)
+        ButtonLayout{
+            ForEach(0..<level.uniqueNoteCount, id: \.self){number in
+                Button{
+                    if !level.isSequence{
+                        funcToRun1(number, level.note(at: solution))
+                    }else{
+                        funcToRun2(number)
+                        neutralHaptics()
                     }
+                }label: {
+                    Text(level.uniqueNoteNames[number])
                 }
-                if level.uniqueNoteCount > 4{
-                    HStack{
-                        ForEach(4..<level.uniqueNoteCount, id: \.self){number in
-                            Button{
-                                if !level.isSequence{
-                                    funcToRun1(number, level.note(at: solution))
-                                }else{
-                                    funcToRun2(number)
-                                    neutralHaptics()
-                                }
-                            }label: {
-                                Text(level.uniqueNoteNames[number])
-                            }
-                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
-                            .disabled(pauseGame)
-                        }
-                    }
-                }
+                .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
+                .disabled(pauseGame)
             }
-            .font(.system(size: fontSize))
         }
-        return body
+        .font(.system(size: fontSize))
     }
     func QuestionView()-> some View{
         @ViewBuilder var questions: some View{
@@ -460,7 +436,9 @@ extension LevelView{
                 judgeAnswerInMIDI(forNoteNumber: a, correctNote: b)
             }
         }
+        
         let rightAnswers = currentAnswersStatus.reduce(0){ $1 == false ? $0 + 1 : $0}
+        
         if shouldEndGameBasedOnPerformance(check: rightAnswers){
             return
         }
@@ -486,7 +464,9 @@ extension LevelView{
         currentSequence = array
         currentAnswers = []
         timeRemaining = level.timer
+        
         currentAnswersStatus = []
+        
     }
 }
 
