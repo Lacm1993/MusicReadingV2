@@ -54,8 +54,15 @@ struct ContentView: View {
                                     }
                                     .textAndSystemImagesColor(preferedScheme: theme)
                                     if let levelToEdit, levelToEdit == level.id{
-                                        Stepper("\(level.numberOfQuestions) questions", value: $level.numberOfQuestions, in: 90...500, step: 1)
-                                        Stepper("\(level.timer) seconds", value: $level.timer, in: 30...500, step: 1)
+                                        if !level.isSequence{
+                                            Stepper("\(level.numberOfQuestions) questions", value: $level.numberOfQuestions, in: 90...500, step: 1)
+                                            Stepper("\(level.timer) seconds", value: $level.timer, in: 30...500, step: 1)
+                                        }else{
+                                            Stepper("\(level.sequenceCount) sequences", value: $level.sequenceCount, in: 10...200, step: 1)
+                                            Stepper("\(level.timer) seconds per sequence", value: $level.timer, in: 4...12, step: 1)
+                                            Stepper("\(level.sequenceNoteCount) notes per sequence", value: $level.sequenceNoteCount, in: 2...10, step: 1)
+                                        }
+                                        
                                         HStack(spacing: 100){
                                             Button{
                                                 saveEdits(for: level)
@@ -91,6 +98,12 @@ struct ContentView: View {
                                     isRemainderToSaveNeeded = true
                                 }
                                 .onChange(of: level.timer){_ in
+                                    isRemainderToSaveNeeded = true
+                                }
+                                .onChange(of: level.sequenceCount){_ in
+                                    isRemainderToSaveNeeded = true
+                                }
+                                .onChange(of: level.sequenceNoteCount){_ in
                                     isRemainderToSaveNeeded = true
                                 }
                                 .transition(AnyTransition.asymmetric(insertion: .opacity, removal: .slide).combined(with: .opacity))

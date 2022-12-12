@@ -225,16 +225,22 @@ struct Level: Identifiable, Codable, Hashable{
     }
     var numberOfQuestions: Int
     var timer: Int
+    
+    var sequenceCount: Int
+    var sequenceNoteCount: Int
+    
     fileprivate(set) var notes: [Note]
     fileprivate(set) var id = UUID()
     @MaxScoreControl fileprivate(set) var maxScore: Int
     fileprivate(set) var numberOrTries: Int
     fileprivate(set) var percentagePerNote : [Note : ScorePerNote]
-    fileprivate(set) var freeLevel: Bool
+    fileprivate(set) var isFreeLevel: Bool
     fileprivate(set) var isEnabled: Bool
     fileprivate(set) var isDeletable: Bool
+    fileprivate(set) var isSequence: Bool
+    
     var isCompleted: Bool{
-        guard !freeLevel else{
+        guard !isFreeLevel else{
             return true
         }
         return maxScore >= Level.requiredScore
@@ -285,14 +291,17 @@ struct Level: Identifiable, Codable, Hashable{
             return self.percentagePerNote[note]?.wrong ?? 0
         }
     }
-    init(numberOfQuestions: Int = 100, timer: Int = 120, numberOrTries: Int = 0, maxScore: Int = 0, freeLevel: Bool = false, isEnabled: Bool = false, isDeletable: Bool = false, notes: [Note]) {
+    init(numberOfQuestions: Int = 100, timer: Int = 120, sequenceCount: Int = 5, sequenceNoteCount: Int = 5 ,numberOrTries: Int = 0, maxScore: Int = 0, isFreeLevel: Bool = false, isEnabled: Bool = false, isDeletable: Bool = false, isSequence: Bool = false, notes: [Note]) {
         self.numberOfQuestions = numberOfQuestions
         self.timer = timer
+        self.sequenceCount = sequenceCount
+        self.sequenceNoteCount = sequenceNoteCount
         self.numberOrTries = numberOrTries
         self.maxScore = maxScore
-        self.freeLevel = freeLevel
+        self.isFreeLevel = isFreeLevel
         self.isEnabled = isEnabled
         self.isDeletable = isDeletable
+        self.isSequence = isSequence
         self.notes = notes
         self.percentagePerNote = notes.reduce(into: [:]){dict, note in
             dict[note] = ScorePerNote(right: 0, wrong: 0)
@@ -302,13 +311,16 @@ struct Level: Identifiable, Codable, Hashable{
     init(){
         self.numberOfQuestions = 0
         self.timer = 0
+        self.sequenceCount = 0
+        self.sequenceNoteCount = 0
         self.notes = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60)]
         self.id = UUID()
         self.maxScore = 0
         self.numberOrTries = 0
-        self.freeLevel = false
+        self.isFreeLevel = false
         self.isEnabled = true
         self.isDeletable = false
+        self.isSequence = false
         self.percentagePerNote = [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60):  ScorePerNote(right: 0, wrong: 0)]
     }
 }
@@ -391,7 +403,7 @@ class AppProgress: ObservableObject{
     }
     //If there are no free levels it returns a random UUID which might mess up with the scroll view reader, i dont know
     var firstCustomLevelID: UUID?{
-        self.levels.first(where: {level in level.freeLevel})?.id
+        self.levels.first(where: {level in level.isFreeLevel})?.id
     }
     
     
@@ -420,7 +432,7 @@ class AppProgress: ObservableObject{
             return .None
         }
         
-        guard !levels[index + 1].freeLevel else{
+        guard !levels[index + 1].isFreeLevel else{
             return .NotApplicable
         }
         guard !levels[index + 1].isEnabled else{
@@ -436,10 +448,16 @@ class AppProgress: ObservableObject{
             percentagePerNote[note] = Level.ScorePerNote(right: 0, wrong: 0)
         }
         let notesArray = notes.sorted()
-        let level = Level(numberOfQuestions: numberOfQuestions, timer: timer, numberOrTries: 0, maxScore: 0, freeLevel: true, isEnabled: true, isDeletable: true, notes: notesArray)
+        let level = Level(numberOfQuestions: numberOfQuestions, timer: timer, isFreeLevel: true, isEnabled: true, isDeletable: true, notes: notesArray)
         self.levels.append(level)
         self.saveData()
     }
+    func addSequenceLevel(sequenceCount: Int, sequenceNoteCount: Int, sequenceTimer: Int, notes: Array<Note>){
+        let level = Level(timer: sequenceTimer, sequenceCount: sequenceCount, sequenceNoteCount: sequenceNoteCount, isFreeLevel: true, isEnabled: true, isDeletable: true, isSequence:  true, notes: notes)
+        self.levels.append(level)
+        self.saveData()
+    }
+    
     func delete(level: Level){
         guard level.isDeletable else{
             return
@@ -469,12 +487,14 @@ class AppProgress: ObservableObject{
             }
         }
     }
+
+    
     //Only for development, resets the game to the initial state
     func resetAll(){
         levels = [Level(isEnabled: true,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
-                                Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
-                        ]),
+                                                   Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
+                                                  ]),
                   Level(
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
@@ -504,7 +524,7 @@ class AppProgress: ObservableObject{
                         notes: [Note(name: .C, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67)
                         ]),
-                  Level(
+                  Level(isSequence: false,
                         notes: [Note(name: .C, register: 4, duration: .quarterNote,             accidental: .None, clef: .G, MIDINoteNumber: 60),
                                 Note(name: .G, register: 4, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 67),
                                 Note(name: .C, register: 5, duration: .quarterNote, accidental: .None, clef: .G, MIDINoteNumber: 72),

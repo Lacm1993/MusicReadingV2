@@ -36,7 +36,7 @@ struct ScrollreaderCompactView: View{
             Button{
                 funcToRun1()
             }label: {
-                Text("Mandatorty levels")
+                Text("Mandatory levels")
             }
             Button{
                 funcToRun2()

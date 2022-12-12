@@ -15,6 +15,11 @@ struct AddNewLevelView: View {
     
     @EnvironmentObject var data: AppProgress
     
+    @State private var isSequence = false
+    @State private var sequenceCount = 10
+    @State private var sequenceNoteCount = 5
+    @State private var sequenceTimer = 5
+    
     @State private var notes = Set<Note>()
     @State private var selectedNotes = Set<Note>()
     @State private var numberOfQuestions = 90
@@ -30,7 +35,11 @@ struct AddNewLevelView: View {
     @State private var clef : Clef = .G
     
     var isSaveButtonDisabled: Bool{
-        notes.count < 2
+        if !isSequence{
+           return notes.count < 2
+        }else{
+            return notes.count != sequenceNoteCount
+        }
     }
     var areMultipleNotesBeingAdded: Bool{
         addAllNotesInRegister || addTheSameNotesFromAllAvailableRegisters
@@ -92,42 +101,63 @@ struct AddNewLevelView: View {
                 Section{
                     
                     
-                    Stepper(value: $numberOfQuestions, in: 10...200, step: 1){
-                        Text("\(numberOfQuestions) questions")
-                    }
-                    .accessibilityElements(label: "Number of questions.", hint: "Set the number of questions for this level, the minimum number of questions is ninety.", childBehavior: .ignore, value: "\(numberOfQuestions) questions selected"){action in
-                        switch action {
-                        case .increment:
-                            numberOfQuestions += 1
-                        case .decrement:
-                            if numberOfQuestions > 90{
-                                numberOfQuestions -= 1
-                            }
-                        @unknown default:
-                            fatalError("Accesibility adjustable action currently not handled")
+                    Toggle("Sequence mode", isOn: $isSequence.animation())
+                    if isSequence{
+                        Stepper(value: $sequenceCount, in: 10...200, step: 1){
+                            Text("Number of sequences: \(sequenceCount)")
+                        }
+                        Stepper(value: $sequenceNoteCount, in: 2...10, step: 1){
+                            Text("Number of notes per sequence: \(sequenceNoteCount)")
+                        }
+                        Stepper(value: $sequenceTimer, in: 4...12, step: 1){
+                            Text("Number of seconds per sequence: \(sequenceTimer)")
                         }
                     }
                     
                     
-                    Stepper(value: $timer, in: 10...200, step: 1){
-                        Text("\(timer) seconds")
-                    }
-                    .accessibilityElements(label: "Timer.", hint: "Set the time limit for this level, the minimum number of seconds is thirty.", childBehavior: .ignore, value: "\(timer) seconds."){action in
-                        switch action {
-                        case .increment:
-                            timer += 1
-                        case .decrement:
-                            if timer > 30{
-                                timer -= 1
-                            }
-                        @unknown default:
-                            fatalError("Accesibility adjustable action currently not handled")
+                }
+            
+                if !isSequence{
+                    Section{
+                        
+                        
+                        Stepper(value: $numberOfQuestions, in: 10...200, step: 1){
+                            Text("\(numberOfQuestions) questions")
                         }
+                        .accessibilityElements(label: "Number of questions.", hint: "Set the number of questions for this level, the minimum number of questions is ninety.", childBehavior: .ignore, value: "\(numberOfQuestions) questions selected"){action in
+                            switch action {
+                            case .increment:
+                                numberOfQuestions += 1
+                            case .decrement:
+                                if numberOfQuestions > 90{
+                                    numberOfQuestions -= 1
+                                }
+                            @unknown default:
+                                fatalError("Accesibility adjustable action currently not handled")
+                            }
+                        }
+                        
+                        
+                        Stepper(value: $timer, in: 10...200, step: 1){
+                            Text("\(timer) seconds")
+                        }
+                        .accessibilityElements(label: "Timer.", hint: "Set the time limit for this level, the minimum number of seconds is thirty.", childBehavior: .ignore, value: "\(timer) seconds."){action in
+                            switch action {
+                            case .increment:
+                                timer += 1
+                            case .decrement:
+                                if timer > 30{
+                                    timer -= 1
+                                }
+                            @unknown default:
+                                fatalError("Accesibility adjustable action currently not handled")
+                            }
+                        }
+                        
+                        
+                    }header: {
+                        Text("Number of questions & Time limit")
                     }
-                    
-                    
-                }header: {
-                    Text("Number of questions & Time limit")
                 }
                 
                 
@@ -389,7 +419,11 @@ struct AddNewLevelView: View {
 extension AddNewLevelView{
     func saveNewLevel(){
         let noteArray = notes.sorted()
-        data.addLevel(withNumberOfQuestions: numberOfQuestions, timer: timer, notes: noteArray)
+        if isSequence{
+            data.addSequenceLevel(sequenceCount: sequenceCount, sequenceNoteCount: sequenceNoteCount, sequenceTimer: sequenceTimer, notes: noteArray)
+        }else{
+            data.addLevel(withNumberOfQuestions: numberOfQuestions, timer: timer, notes: noteArray)
+        }
     }
     func resetNoteInputData(){
         addAllNotesInRegister = false
