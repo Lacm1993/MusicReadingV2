@@ -234,7 +234,6 @@ struct Level: Identifiable, Codable, Hashable{
     @MaxScoreControl fileprivate(set) var maxScore: Int
     fileprivate(set) var numberOrTries: Int
     fileprivate(set) var percentagePerNote : [Note : ScorePerNote]
-    
     fileprivate(set) var isFreeLevel: Bool
     fileprivate(set) var isEnabled: Bool
     fileprivate(set) var isDeletable: Bool
@@ -488,6 +487,8 @@ class AppProgress: ObservableObject{
             }
         }
     }
+
+    
     //Only for development, resets the game to the initial state
     func resetAll(){
         levels = [Level(isEnabled: true,

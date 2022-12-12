@@ -86,6 +86,7 @@ struct GameButton : ButtonStyle{
                     )) :
                 AnyView(Color.clear)
             )
+            .padding(5)
     }
 }
 extension View{

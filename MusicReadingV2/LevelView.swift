@@ -277,6 +277,21 @@ extension LevelView{
                         .multilineTextAlignment(.center)
                         .frame(width: textWidth, height: imageFrame.height)
                 }
+            }else{
+                let startIndex = max(0, currentAnswersStatus.count - level.sequenceNoteCount)
+                let latestAnswers = Array(currentAnswersStatus[startIndex..<currentAnswersStatus.count])
+                HStack{
+                    ForEach(0..<latestAnswers.count, id: \.self){num in
+                        switch latestAnswers[num]{
+                        case true:
+                            Image(systemName: "checkmark.circle.fill")
+                                .statusImage(width: 50, height: 50, color: .green, opacity: answerAnimationOpacity)
+                        case false:
+                            Image(systemName: "xmark.circle.fill")
+                                .statusImage(width: 50, height: 50, color: .red, opacity: answerAnimationOpacity)
+                        }
+                    }
+                }
             }
         }
         return animation
@@ -379,8 +394,8 @@ extension LevelView{
                 currentAnswersStatus.append(false)
             }
         }
+        answerAnimationOpacity = 1
         if !level.isSequence{
-            answerAnimationOpacity = 1
             questionsRemaining -= 1
             solution = Int.random(in: 0..<level.noteCount)
         }
@@ -436,9 +451,8 @@ extension LevelView{
                 judgeAnswerInMIDI(forNoteNumber: a, correctNote: b)
             }
         }
-        
-        let rightAnswers = currentAnswersStatus.reduce(0){ $1 == false ? $0 + 1 : $0}
-        
+        let startIndex = currentAnswersStatus.count - level.sequenceNoteCount
+        let rightAnswers = Array(currentAnswersStatus[startIndex..<currentAnswersStatus.count]).reduce(0){ $1 == false ? $0 + 1 : $0}
         if shouldEndGameBasedOnPerformance(check: rightAnswers){
             return
         }
@@ -464,9 +478,6 @@ extension LevelView{
         currentSequence = array
         currentAnswers = []
         timeRemaining = level.timer
-        
-        currentAnswersStatus = []
-        
     }
 }
 
