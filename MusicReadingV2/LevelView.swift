@@ -212,44 +212,24 @@ extension LevelView{
     
     func ButtonInputView(funcToRun1: @escaping (Int, Note?)-> Void, funcToRun2:  @escaping (Int)-> Void, buttonDimensions: CGSize, fontSize: CGFloat)-> some View{
         @ViewBuilder var body: some View {
-            if level.uniqueNoteCount <= 4{
-                VStack(alignment: .center){
-                    HStack{
-                        ForEach(0..<level.uniqueNoteCount, id: \.self){number in
-                            Button{
-                                if !level.isSequence{
-                                    funcToRun1(number, level.note(at: solution))
-                                }else{
-                                    funcToRun2(number)
-                                    neutralHaptics()
-                                }
-                            }label: {
-                                Text(level.uniqueNoteNames[number])
+            VStack(alignment: .center){
+                HStack{
+                    ForEach(0..<min(4, level.uniqueNoteCount), id: \.self){number in
+                        Button{
+                            if !level.isSequence{
+                                funcToRun1(number, level.note(at: solution))
+                            }else{
+                                funcToRun2(number)
+                                neutralHaptics()
                             }
-                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
-                            .disabled(pauseGame)
+                        }label: {
+                            Text(level.uniqueNoteNames[number])
                         }
+                        .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
+                        .disabled(pauseGame)
                     }
                 }
-                .font(.system(size: fontSize))
-            }else{
-                VStack(alignment: .center){
-                    HStack{
-                        ForEach(0..<4, id: \.self){number in
-                            Button{
-                                if !level.isSequence{
-                                    funcToRun1(number, level.note(at: solution))
-                                }else{
-                                    funcToRun2(number)
-                                    neutralHaptics()
-                                }
-                            }label: {
-                                Text(level.uniqueNoteNames[number])
-                            }
-                            .buttonStyle(GameButton(width: buttonDimensions.width, height: buttonDimensions.height, theme: theme, pauseGame: pauseGame))
-                            .disabled(pauseGame)
-                        }
-                    }
+                if level.uniqueNoteCount > 4{
                     HStack{
                         ForEach(4..<level.uniqueNoteCount, id: \.self){number in
                             Button{
@@ -267,8 +247,8 @@ extension LevelView{
                         }
                     }
                 }
-                .font(.system(size: fontSize))
             }
+            .font(.system(size: fontSize))
         }
         return body
     }
@@ -370,11 +350,6 @@ extension LevelView{
             isShowingSheet = true
         }
     }
-    func shouldDispatchAnswers(check answers: [Int]){
-        if answers.count == currentSequence.count{
-            dispatchAnswersAndCreateNextSequence()
-        }
-    }
     func shouldAnimateTimer(check time: Int){
         if !level.isSequence{
             if time < 10{
@@ -392,6 +367,11 @@ extension LevelView{
             }else{
                 timerScaleEffect = 0.25
             }
+        }
+    }
+    func shouldDispatchAnswers(check answers: [Int]){
+        if answers.count == currentSequence.count{
+            dispatchAnswersAndCreateNextSequence()
         }
     }
 }
